@@ -504,41 +504,32 @@ export const VoucherPDF = ({ data, baseUrl }: { data: any; baseUrl: string }) =>
                         {/* Approvals */}
                         <PDFView style={styles.approvalsGrid}>
                             <PDFView style={styles.approvalBox}>
-                                <PDFView style={[styles.approvalText, { height: px(25), marginBottom: px(4) }]}>
-                                    <PDFText>{data?.approvals?.requestedBy || ''}</PDFText>
+                                <PDFView style={[styles.approvalText, { height: px(20), marginBottom: px(4) }]}>
+                                    <PDFText style={{ fontSize: px(11), fontWeight: 600 }}>{data?.approvals?.requestedBy || ''}</PDFText>
                                 </PDFView>
-                                <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(8) }]} />
+                                <PDFView style={[styles.approvalLine, { height: px(1), marginBottom: px(6) }]} />
                                 <PDFText style={styles.approvalLabel}>Requested By</PDFText>
                             </PDFView>
-                            <PDFView style={[styles.approvalBox, { gap: px(15) }]}>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={[styles.approvalLabel, { fontSize: px(7) }]}>Name</PDFText>
+                            <PDFView style={styles.approvalBox}>
+                                <PDFView style={[styles.approvalText, { height: px(20), marginBottom: px(4) }]}>
+                                    <PDFText style={{ fontSize: px(11), fontWeight: 600 }}>{data?.approvals?.authorizedBy || ''}</PDFText>
                                 </PDFView>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={styles.approvalLabel}>Authorized By (Sign)</PDFText>
-                                </PDFView>
+                                <PDFView style={[styles.approvalLine, { height: px(1), marginBottom: px(6) }]} />
+                                <PDFText style={styles.approvalLabel}>Authorized By <PDFText style={{ fontSize: px(7), fontWeight: 400 }}>(Sign)</PDFText></PDFText>
                             </PDFView>
-                            <PDFView style={[styles.approvalBox, { gap: px(15) }]}>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={[styles.approvalLabel, { fontSize: px(7) }]}>Name</PDFText>
+                            <PDFView style={styles.approvalBox}>
+                                <PDFView style={[styles.approvalText, { height: px(20), marginBottom: px(4) }]}>
+                                    <PDFText style={{ fontSize: px(11), fontWeight: 600 }}>{data?.approvals?.paidBy || ''}</PDFText>
                                 </PDFView>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={styles.approvalLabel}>Paid By (Sign)</PDFText>
-                                </PDFView>
+                                <PDFView style={[styles.approvalLine, { height: px(1), marginBottom: px(6) }]} />
+                                <PDFText style={styles.approvalLabel}>Paid By <PDFText style={{ fontSize: px(7), fontWeight: 400 }}>(Sign)</PDFText></PDFText>
                             </PDFView>
-                            <PDFView style={[styles.approvalBoxLast, { gap: px(15) }]}>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={[styles.approvalLabel, { fontSize: px(7) }]}>Name</PDFText>
+                            <PDFView style={styles.approvalBoxLast}>
+                                <PDFView style={[styles.approvalText, { height: px(20), marginBottom: px(4) }]}>
+                                    <PDFText style={{ fontSize: px(11), fontWeight: 600 }}>{data?.approvals?.receivedBy || ''}</PDFText>
                                 </PDFView>
-                                <PDFView>
-                                    <PDFView style={[styles.approvalLine, { height: px(20), marginBottom: px(4) }]} />
-                                    <PDFText style={styles.approvalLabel}>Received By (Sign)</PDFText>
-                                </PDFView>
+                                <PDFView style={[styles.approvalLine, { height: px(1), marginBottom: px(6) }]} />
+                                <PDFText style={styles.approvalLabel}>Received By <PDFText style={{ fontSize: px(7), fontWeight: 400 }}>(Sign)</PDFText></PDFText>
                             </PDFView>
                         </PDFView>
                     </PDFView>
