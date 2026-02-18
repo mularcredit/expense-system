@@ -1,26 +1,386 @@
 @import "tailwindcss";
 
+@theme {
+  --font-lexend: var(--font-lexend);
+  --font-geist: var(--font-geist-sans);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand Colors - Inspired by SkillAlley Design */
+  --gds-primary: #6366f1;
+  /* Vibrant Indigo/Purple */
+  --gds-secondary: #a855f7;
+  /* Soft Purple */
+  --gds-accent: #f472b6;
+  /* Soft Pink */
+
+  /* PREMIUM LIGHT THEME - "Soft & Airy" */
+  --gds-bg: #f3f4f6;
+  /* Very light cool grey */
+  --gds-sidebar-bg: #ffffff;
+  --gds-surface: #ffffff;
+  --gds-surface-bright: #ffffff;
+  --gds-input-bg: #f9fafb;
+
+  --gds-text-main: #1f2937;
+  /* Dark Grey for softer contrast */
+  --gds-text-muted: #9ca3af;
+  /* Light Grey */
+
+  --gds-border: rgba(0, 0, 0, 0.15);
+  /* Slick thin border */
+  --gds-card-hover: #ffffff;
+
+  /* Minimize shadows, focus on borders */
+  --gds-shadow: none;
+  --gds-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  --gds-hero-bg: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+    #f3f4f6;
+
+  --gds-gradient-vibrant: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme='dark'] {
+  --gds-bg: #030712;
+  --gds-sidebar-bg: #020617;
+  --gds-surface: rgba(15, 23, 42, 0.7);
+  --gds-surface-bright: rgba(30, 41, 59, 0.8);
+  --gds-input-bg: rgba(2, 6, 23, 0.4);
+
+  --gds-text-main: #f8fafc;
+  --gds-text-muted: #94a3b8;
+
+  --gds-border: rgba(255, 255, 255, 0.08);
+  --gds-card-hover: rgba(30, 41, 59, 0.5);
+
+  --gds-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --gds-hero-bg: linear-gradient(135deg, #030712 0%, #1e1b4b 100%);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+body {
+  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--gds-bg);
+  color: var(--gds-text-main);
+  background-image: var(--gds-hero-bg);
+  background-attachment: scroll;
+  /* Changed from fixed to scroll for better performance */
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* Glassmorphic Card - Refined for Alpha Store */
+.gds-glass {
+  background-color: var(--gds-surface);
+  border: 1px solid var(--gds-border);
+  border-radius: 1.5rem;
+  box-shadow: var(--gds-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gds-glass:hover {
+  border-color: rgba(94, 72, 184, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -10px rgba(94, 72, 184, 0.1);
+}
+
+/* Premium Button - Purple to Cyan */
+.gds-btn-premium {
+  background: #29258D !important;
+  /* Matches sidebar color */
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 20px -5px rgba(94, 72, 184, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.gds-btn-premium:hover {
+  transform: scale(1.02);
+  box-shadow: 0 15px 30px -5px rgba(94, 72, 184, 0.5);
+  filter: brightness(1.1);
+}
+
+.gds-btn-cyan {
+  background: var(--gds-gradient-cyan);
+  color: #0f172a;
+  padding: 0.875rem 1.75rem;
+  border-radius: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 20px -5px rgba(114, 234, 225, 0.3);
+}
+
+.gds-btn-cyan:hover {
+  transform: scale(1.02);
+  box-shadow: 0 15px 30px -5px rgba(114, 234, 225, 0.5);
+  filter: brightness(1.1);
+}
+
+/* Badge */
+.gds-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 10px;
+  border: 1px solid transparent;
+}
+
+.gds-badge-success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: var(--gds-border);
+}
+
+/* Tables */
+.gds-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.gds-table th {
+  background-color: var(--gds-surface);
+  padding: 1rem 1.5rem;
+  color: var(--gds-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  border-bottom: 1px solid var(--gds-border);
+}
+
+.gds-table td {
+  padding: 1rem 1.5rem;
+  color: var(--gds-text-main);
+  font-size: 13px;
+  border-bottom: 1px solid var(--gds-border);
+}
+
+.gds-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Utilities */
+.font-heading {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+}
+
+.font-sans {
+  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.font-geist,
+.dash-main {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Ensure Sidebar stays Lexend */
+.sidebar-container,
+.sidebar-container * {
+  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+
+
+.text-shadow-glow {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes pulse-gentle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translate3d(0, 0, 0);
+    /* Replaced scale with null-transform to avoid children repaint */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-pulse-slow {
+  animation: pulse-gentle 8s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(10px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes shine {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.group:hover .group-hover\:animate-shine {
+  animation: shine 0.7s;
+}
+
+/* Specific transitions for interactive elements only - NO TRANSFORM BY DEFAULT */
+button,
+a,
+input,
+select,
+.transition-all {
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s, box-shadow 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* For performance optimization on complex pages */
+.gpu-accel {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Transform should be opt-in for performance */
+.hover-lift:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Profile Specific Classes */
+.profile-banner {
+  background: var(--gds-gradient-premium);
+  height: 160px;
+  border-radius: 1.5rem;
+  opacity: 0.9;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.1));
+}
+
+.avatar-overlap {
+  margin-top: -60px;
+  border: 6px solid var(--gds-bg);
+  box-shadow: var(--gds-shadow);
+}
+
+.info-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gds-surface-bright);
+  color: var(--gds-text-main);
+  transition: all 0.2s;
+}
+
+.gds-glass-soft {
+  background: var(--gds-gradient-soft);
+  border: 1px solid var(--gds-border);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(8px);
 }

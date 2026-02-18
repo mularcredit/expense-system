@@ -1,0 +1,767 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                  String              @id @default(cuid())
+  email               String              @unique
+  name                String
+  password            String
+  role                String              @default("EMPLOYEE")
+  department          String?
+  position            String?
+  managerId           String?
+  bankAccount         String?
+  phoneNumber         String?
+  profileImage        String?
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  customRoleId        String?
+  accountStatus       String              @default("PENDING")
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  stripeAccountId     String?
+  stripeConnectStatus String?
+  approvals           Approval[]
+  itemApprovals       ItemApproval[]
+  expenses            Expense[]
+  createdInvoices     Invoice[]
+  monthlyBudgets      MonthlyBudget[]
+  notifications       Notification[]
+  checkedPayments     Payment[]           @relation("PaymentChecker")
+  madePayments        Payment[]           @relation("PaymentMaker")
+  requisitions        Requisition[]
+  approvedSchedules   Schedule[]          @relation("ScheduleApprover")
+  createdSchedules    Schedule[]          @relation("ScheduleCreator")
+  customRole          Role?               @relation(fields: [customRoleId], references: [id])
+  manager             User?               @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates        User[]              @relation("ManagerSubordinates")
+  wallet              Wallet?
+  walletTransactions  WalletTransaction[]
+  assets              Asset[]
+  salaryBatchesCreated SalaryBatch[]       @relation("SalaryCreator")
+  salaryBatchesApproved SalaryBatch[]      @relation("SalaryApprover")
+
+  @@index([email])
+  @@index([managerId])
+  @@index([stripeAccountId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  relatedId String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model Schedule {
+  id               String              @id @default(cuid())
+  name             String
+  description      String?
+  type             String
+  frequency        String
+  startDate        DateTime
+  endDate          DateTime?
+  nextRun          DateTime
+  amount           Float
+  currency         String              @default("USD")
+  vendorId         String?
+  categoryId       String?
+  accountId        String?
+  requiresApproval Boolean             @default(false)
+  approverId       String?
+  isActive         Boolean             @default(true)
+  createdById      String
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  approver         User?               @relation("ScheduleApprover", fields: [approverId], references: [id])
+  category         Category?           @relation(fields: [categoryId], references: [id])
+  createdBy        User                @relation("ScheduleCreator", fields: [createdById], references: [id])
+  vendor           Vendor?             @relation(fields: [vendorId], references: [id])
+  executions       ScheduleExecution[]
+
+  @@index([nextRun, isActive])
+  @@index([type])
+  @@index([createdById])
+}
+
+model ScheduleExecution {
+  id           String    @id @default(cuid())
+  scheduleId   String
+  scheduledFor DateTime
+  executedAt   DateTime?
+  status       String
+  entityType   String?
+  entityId     String?
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  schedule     Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([scheduleId])
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  isSystem    Boolean          @default(false)
+  maxApprovalLimit Float?      @default(100)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       User[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  resource    String
+  action      String
+  description String?
+  roles       RolePermission[]
+
+  @@unique([resource, action])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Wallet {
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  balance      Float               @default(0)
+  currency     String              @default("USD")
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  user         User                @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  userId      String
+  type        String
+  amount      Float
+  description String
+  reference   String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([userId])
+}
+
+model Requisition {
+  id                    String             @id @default(cuid())
+  userId                String
+  title                 String
+  description           String
+  amount                Float
+  currency              String             @default("USD")
+  category              String
+  businessJustification String
+  expectedDate          DateTime?
+  type                  String             @default("STANDARD")
+  branch                String?
+  department            String?
+  status                String             @default("PENDING")
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  approvals             Approval[]
+  expenses              Expense[]
+  invoices              Invoice[]
+  items                 RequisitionItem[]
+  user                  User               @relation(fields: [userId], references: [id])
+  paymentId             String?
+  payment               Payment?           @relation(fields: [paymentId], references: [id])
+  journalEntries        JournalEntry[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model RequisitionItem {
+  id            String      @id @default(cuid())
+  requisitionId String
+  title         String
+  description   String?
+  quantity      Int         @default(1)
+  unitPrice     Float
+  totalPrice    Float
+  category      String
+  status        String      @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  type          String      @default("STANDARD") // STANDARD, SOUTH_SUDAN, SOUTH_SUDAN_STRICT
+  isInitial     Boolean     @default(true) // true if created with requisition, false if added later
+  approvals     ItemApproval[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  requisition   Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+
+  @@index([requisitionId])
+  @@index([status])
+}
+
+
+model CustomCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+  @@index([isActive])
+}
+
+model ItemApproval {
+  id                String          @id @default(cuid())
+  requisitionItemId String
+  approverId        String
+  level             Int             @default(1)
+  status            String          @default("PENDING") // PENDING, APPROVED, REJECTED
+  comments          String?
+  approvedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  approver          User            @relation(fields: [approverId], references: [id])
+  requisitionItem   RequisitionItem @relation(fields: [requisitionItemId], references: [id], onDelete: Cascade)
+
+  @@index([requisitionItemId])
+  @@index([approverId])
+  @@index([status])
+}
+
+
+model MonthlyBudget {
+  id          String       @id @default(cuid())
+  userId      String
+  month       Int
+  year        Int
+  branch      String
+  department  String
+  totalAmount Float        @default(0)
+  status      String       @default("PENDING")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  approvals   Approval[]
+  items       BudgetItem[]
+  user        User         @relation(fields: [userId], references: [id])
+  paymentId   String?
+  payment     Payment?     @relation(fields: [paymentId], references: [id])
+  journalEntries JournalEntry[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model BudgetItem {
+  id          String        @id @default(cuid())
+  budgetId    String
+  description String
+  category    String
+  amount      Float
+  budget      MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  @@index([budgetId])
+}
+
+model Expense {
+  id             String       @id @default(cuid())
+  userId         String
+  requisitionId  String?
+  title          String
+  description    String?
+  amount         Float
+  currency       String       @default("USD")
+  category       String
+  expenseDate    DateTime
+  merchant       String?
+  paymentMethod  String       @default("PERSONAL_CARD")
+  isReimbursable Boolean      @default(true)
+  isBillable     Boolean      @default(false)
+  receiptUrl     String?
+  status         String       @default("DRAFT")
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  paymentId      String?
+  approvals      Approval[]
+  payment         Payment?     @relation(fields: [paymentId], references: [id])
+  requisition     Requisition? @relation(fields: [requisitionId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+  journalEntries  JournalEntry[]
+  salaryBatch     SalaryBatch?
+
+  @@index([userId])
+  @@index([status])
+  @@index([requisitionId])
+  @@index([paymentId])
+}
+
+model Approval {
+  id              String         @id @default(cuid())
+  expenseId       String?
+  requisitionId   String?
+  monthlyBudgetId String?
+  invoiceId       String?
+  approverId      String
+  level           Int            @default(1)
+  status          String         @default("PENDING")
+  comments        String?
+  approvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  approver        User           @relation(fields: [approverId], references: [id])
+  expense         Expense?       @relation(fields: [expenseId], references: [id])
+  invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
+  monthlyBudget   MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
+  requisition     Requisition?   @relation(fields: [requisitionId], references: [id])
+
+  @@index([expenseId])
+  @@index([requisitionId])
+  @@index([monthlyBudgetId])
+  @@index([invoiceId])
+  @@index([approverId])
+}
+
+model Invoice {
+  id            String            @id @default(cuid())
+  vendorId      String
+  invoiceNumber String            @unique
+  invoiceDate   DateTime
+  dueDate       DateTime
+  amount        Float
+  taxAmount     Float             @default(0)
+  currency      String            @default("USD")
+  description   String?
+  notes         String?
+  status        String            @default("DRAFT")
+  paymentStatus String            @default("UNPAID")
+  paymentTerms  String?
+  requisitionId String?
+  fileUrl       String?
+  createdById   String
+  paidAt        DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  paymentId     String?
+  approvals     Approval[]
+  createdBy     User              @relation(fields: [createdById], references: [id])
+  payment       Payment?          @relation(fields: [paymentId], references: [id])
+  requisition   Requisition?      @relation(fields: [requisitionId], references: [id])
+  vendor         Vendor            @relation(fields: [vendorId], references: [id])
+  items          InvoiceLineItem[]
+  journalEntries JournalEntry[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@index([invoiceNumber])
+  @@index([dueDate])
+  @@index([paymentId])
+}
+
+model Payment {
+  id           String    @id @default(cuid())
+  amount       Float
+  currency     String    @default("USD")
+  status       String    @default("PENDING_AUTHORIZATION")
+  makerId      String
+  checkerId    String?
+  method       String    @default("BANK_TRANSFER")
+  reference    String?
+  notes        String?
+  authorizedAt DateTime?
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  expenses     Expense[]
+  invoices     Invoice[]
+  requisitions Requisition[]
+  monthlyBudgets MonthlyBudget[]
+  checker      User?     @relation("PaymentChecker", fields: [checkerId], references: [id])
+  maker        User      @relation("PaymentMaker", fields: [makerId], references: [id])
+
+  @@index([makerId])
+  @@index([checkerId])
+  @@index([status])
+}
+
+model InvoiceLineItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Float
+  total       Float
+  category    String?
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Vendor {
+  id              String     @id @default(cuid())
+  name            String
+  legalName       String?
+  taxId           String?
+  email           String?
+  phone           String?
+  website         String?
+  address         String?
+  city            String?
+  country         String?
+  category        String?
+  description     String?
+  isPreferred     Boolean    @default(false)
+  isActive        Boolean    @default(true)
+  paymentTerms    String?
+  currency        String     @default("USD")
+  bankName        String?
+  bankAccount     String?
+  bankRouting     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  stripeAccountId String?
+  invoices        Invoice[]
+  schedules       Schedule[]
+
+  @@index([name])
+  @@index([stripeAccountId])
+}
+
+model Customer {
+  id            String            @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+  contactPerson String?
+  address       String?
+  city          String?
+  country       String?           @default("South Sudan")
+  taxId         String?
+  currency      String            @default("USD")
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  creditNotes   CreditNote[]
+  payments      CustomerPayment[]
+  sales         Sale[]
+
+  @@index([name])
+}
+
+model Sale {
+  id            String            @id @default(cuid())
+  customerId    String
+  invoiceNumber String            @unique
+  issueDate     DateTime
+  dueDate       DateTime
+  totalAmount   Float
+  taxAmount     Float             @default(0)
+  currency      String            @default("USD")
+  status        String            @default("DRAFT")
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  payments      CustomerPayment[]
+  customer      Customer          @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
+
+  @@index([customerId])
+  @@index([invoiceNumber])
+  @@index([status])
+}
+
+model SaleItem {
+  id          String @id @default(cuid())
+  saleId      String
+  description String
+  quantity    Int    @default(1)
+  unitPrice   Float
+  total       Float
+  sale        Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@index([saleId])
+}
+
+model CustomerPayment {
+  id          String   @id @default(cuid())
+  customerId  String
+  amount      Float
+  currency    String   @default("USD")
+  paymentDate DateTime
+  method      String
+  reference   String?
+  saleId      String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  customer    Customer @relation(fields: [customerId], references: [id])
+  sale        Sale?    @relation(fields: [saleId], references: [id])
+
+  @@index([customerId])
+  @@index([saleId])
+}
+
+model CreditNote {
+  id             String         @id @default(cuid())
+  cnNumber       String         @unique
+  invoiceRef     String
+  amount         Float
+  reason         String
+  customerId     String
+  status         String         @default("DRAFT")
+  createdAt      DateTime       @default(now())
+  customer       Customer       @relation(fields: [customerId], references: [id])
+  journalEntries JournalEntry[]
+
+  @@index([customerId])
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  code         String        @unique
+  name         String
+  type         String
+  subtype      String?
+  currency     String        @default("USD")
+  description  String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  journalLines JournalLine[]
+}
+
+model JournalEntry {
+  id           String        @id @default(cuid())
+  date         DateTime
+  description  String
+  reference    String?
+  expenseId      String?
+  invoiceId      String?
+  saleId         String?
+  paymentId      String?
+  creditNoteId   String?
+  requisitionId  String?
+  monthlyBudgetId String?
+  status         String        @default("POSTED")
+  createdAt      DateTime      @default(now())
+  createdBy      String?
+  creditNote      CreditNote?    @relation(fields: [creditNoteId], references: [id])
+  requisition     Requisition?   @relation(fields: [requisitionId], references: [id])
+  monthlyBudget   MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
+  expense         Expense?       @relation(fields: [expenseId], references: [id])
+  invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
+  lines          JournalLine[]
+
+  @@index([date])
+}
+
+model JournalLine {
+  id          String       @id @default(cuid())
+  entryId     String
+  accountId   String
+  description String?
+  debit       Float        @default(0)
+  credit      Float        @default(0)
+  account     Account      @relation(fields: [accountId], references: [id])
+  entry       JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@index([accountId])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  parentId    String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  glCode      String?
+  schedules   Schedule[]
+}
+
+model Policy {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  type          String
+  rules         String
+  isActive      Boolean   @default(true)
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Asset {
+  id             String    @id @default(cuid())
+  name           String
+  description    String?
+  serialNumber   String?   @unique
+  assetTag       String?   @unique
+  category       String
+  
+  // Financials
+  purchaseDate   DateTime
+  purchasePrice  Float
+  currency       String    @default("USD")
+  currentValue   Float?
+  usefulLife     Int?      // In months
+  salvageValue   Float?    @default(0)
+  depreciationMethod String? // STRAIGHT_LINE, DECLINING_BALANCE, NONE
+  depreciationRate Float?    // Annual rate %
+  
+  // Status & Location
+  status         String    @default("ACTIVE") // ACTIVE, MAINTENANCE, RETIRED, LOST, DISPOSED
+  condition      String?   // NEW, GOOD, FAIR, POOR
+  location       String?   // Office, Branch, Warehouse
+  
+  // Assignment
+  assignedToId   String?
+  assignedTo     User?     @relation(fields: [assignedToId], references: [id])
+  
+  // Warranty
+  warrantyExpiry DateTime?
+  vendor         String?
+  
+  // Metadata
+  notes          String?
+  imageUrl       String?
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([assignedToId])
+}
+
+// ============================================
+// PERIOD MANAGEMENT & TAX COMPLIANCE
+// ============================================
+
+model FiscalYear {
+  id          String            @id @default(cuid())
+  name        String            // e.g., "FY 2026"
+  startDate   DateTime
+  endDate     DateTime
+  isCurrent   Boolean           @default(false)
+  isClosed    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  periods     AccountingPeriod[]
+
+  @@index([isCurrent])
+}
+
+model AccountingPeriod {
+  id           String     @id @default(cuid())
+  fiscalYearId String
+  name         String     // e.g., "January 2026", "Q1 2026"
+  periodType   String     // MONTHLY, QUARTERLY, ANNUAL
+  startDate    DateTime
+  endDate      DateTime
+  isClosed     Boolean    @default(false)
+  closedAt     DateTime?
+  closedBy     String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+
+  @@index([fiscalYearId])
+  @@index([isClosed])
+  @@index([startDate, endDate])
+}
+
+model TaxRate {
+  id          String   @id @default(cuid())
+  name        String   // e.g., "VAT", "Sales Tax", "Withholding Tax"
+  code        String   @unique // e.g., "VAT-18", "WHT-10"
+  rate        Float    // Percentage (e.g., 18.0 for 18%)
+  type        String   // VAT, SALES_TAX, WITHHOLDING, EXCISE
+  description String?
+  isActive    Boolean  @default(true)
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+}
+
+// ============================================
+// SALARY / PAYROLL MANAGEMENT
+// ============================================
+
+model SalaryBatch {
+  id              String         @id @default(cuid())
+  title           String         // e.g., "February 2026 Payroll"
+  month           Int
+  year            Int
+  totalAmount     Float
+  currency        String         @default("USD")
+  status          String         @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, PAID
+  notes           String?
+  createdById     String
+  approvedById    String?
+  paidAt          DateTime?
+  
+  // Relations
+  records         SalaryRecord[]
+  expense         Expense?       @relation(fields: [expenseId], references: [id])
+  expenseId       String?        @unique // Link to the single expense entry
+  createdBy       User           @relation("SalaryCreator", fields: [createdById], references: [id])
+  approvedBy      User?          @relation("SalaryApprover", fields: [approvedById], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([month, year])
+  @@index([status])
+}
+
+model SalaryRecord {
+  id              String       @id @default(cuid())
+  batchId         String
+  employeeName    String
+  bankName        String?
+  accountNumber   String?
+  amount          Float
+  notes           String?
+  
+  // Relation to parent batch
+  batch           SalaryBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([employeeName])
+}
