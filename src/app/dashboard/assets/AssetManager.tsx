@@ -161,6 +161,7 @@ export function AssetManager({ assets, stats }: { assets: any[], stats: any }) {
                     icon={PiPackage}
                     color="purple"
                     trend={`${stats.active} Active`}
+                    image="/laptop.png"
                 />
                 <StatsCard
                     title="Asset Value"
@@ -169,6 +170,7 @@ export function AssetManager({ assets, stats }: { assets: any[], stats: any }) {
                     color="emerald"
                     trend="Total Investment"
                     trendUp={true}
+                    image="/money.png"
                 />
                 <StatsCard
                     title="Maintenance"
@@ -176,6 +178,7 @@ export function AssetManager({ assets, stats }: { assets: any[], stats: any }) {
                     icon={PiWarning}
                     color="cyan"
                     trend="Needs Attention"
+                    image="/pos-terminal.png"
                 />
                 <StatsCard
                     title="Retired"
@@ -183,6 +186,7 @@ export function AssetManager({ assets, stats }: { assets: any[], stats: any }) {
                     icon={PiTrash}
                     color="purple"
                     trend="Disposed/Lost"
+                    image="/document.png"
                 />
             </div>
 

@@ -102,46 +102,36 @@ export async function POST(req: NextRequest) {
         }
 
         // Create Payment with core items
-        const paymentData: any = {
-            data: {
-                makerId: session.user.id,
-                amount: totalAmount,
-                currency,
-                method,
-                notes,
-                status: 'PENDING_AUTHORIZATION',
-                expenses: {
-                    connect: expenseIds.map((id: string) => ({ id }))
-                },
-                invoices: {
-                    connect: invoiceIds.map((id: string) => ({ id }))
-                }
+        const createData: any = {
+            makerId: session.user.id,
+            amount: totalAmount,
+            currency,
+            method,
+            notes,
+            status: 'PENDING_AUTHORIZATION',
+            expenses: {
+                connect: expenseIds.map((id: string) => ({ id }))
+            },
+            invoices: {
+                connect: invoiceIds.map((id: string) => ({ id }))
             }
         };
 
-        // Only add requisitions/budgets to connect if the client definitely knows about them
-        // to avoid validation errors if the dev server hasn't picked up the new schema yet.
-        const canConnectRequisitions = (prisma as any).requisition && (prisma as any).payment?.fields?.requisitions;
-        if (canConnectRequisitions) {
-            paymentData.data.requisitions = {
+        if (requisitionIds.length > 0) {
+            createData.requisitions = {
                 connect: requisitionIds.map((id: string) => ({ id }))
             };
-            paymentData.data.monthlyBudgets = {
+        }
+
+        if (budgetIds.length > 0) {
+            createData.monthlyBudgets = {
                 connect: budgetIds.map((id: string) => ({ id }))
             };
         }
 
-        const payment = await (prisma as any).payment.create(paymentData);
-
-        // If we couldn't connect via create (stale client), do it via raw update
-        if (!canConnectRequisitions) {
-            for (const id of requisitionIds) {
-                await prisma.$executeRawUnsafe(`UPDATE "Requisition" SET "paymentId" = $1 WHERE id = $2`, payment.id, id);
-            }
-            for (const id of budgetIds) {
-                await prisma.$executeRawUnsafe(`UPDATE "MonthlyBudget" SET "paymentId" = $1 WHERE id = $2`, payment.id, id);
-            }
-        }
+        const payment = await prisma.payment.create({
+            data: createData
+        });
 
         return NextResponse.json({ success: true, payment });
 

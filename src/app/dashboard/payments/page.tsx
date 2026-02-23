@@ -2,19 +2,10 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import {
-    PiCurrencyDollar,
-    PiUsers,
-    PiBuildings,
-    PiClock,
-    PiCheckCircle,
-    PiWarning,
     PiTrendUp,
-    PiDownloadSimple,
-    PiCalendar,
     PiHandCoins
 } from "react-icons/pi";
 import { PaymentQueue } from "../../../components/dashboard/PaymentQueue";
-import { StripeConnectButton } from "../../../components/dashboard/StripeConnectButton";
 import { stripe } from "@/lib/stripe";
 
 export default async function PaymentsPage() {
@@ -193,92 +184,83 @@ export default async function PaymentsPage() {
                         Process reimbursements, vendor payments and requisitions
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <StripeConnectButton status={stripeStatus} />
-                    <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm">
-                        <PiDownloadSimple className="text-lg" />
-                        Export Report
-                    </button>
-                </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
                 {/* Total Pending */}
-                <div className="gds-glass p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                    <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-purple-100 rounded-xl">
-                                <PiCurrencyDollar className="text-2xl text-purple-600" />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Pending</span>
-                        </div>
-                        <p className="text-3xl font-heading font-bold text-gray-900 mb-1">
-                            ${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </p>
-                        <p className="text-xs text-gray-500 font-medium">
+                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] bg-white group cursor-pointer hover:-translate-y-0.5 transition-all duration-300">
+                    <div className="flex items-start justify-between">
+                        <p className="text-[13px] font-semibold text-gray-600">Total Pending</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
                             {approvedExpenses.length + approvedInvoices.length + approvedRequisitions.length + approvedBudgets.length} items
-                        </p>
+                        </span>
+                    </div>
+                    <div className="flex items-end justify-between mt-3">
+                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
+                            ${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
+                            <img src="/cards/online-payment (1).png" alt="" className="w-full h-full object-contain drop-shadow-md" />
+                        </div>
                     </div>
                 </div>
 
-                {/* Requisitions & Expenses */}
-                <div className="gds-glass p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                    <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-blue-100 rounded-xl">
-                                <PiUsers className="text-2xl text-blue-600" />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Internal Requests</span>
-                        </div>
-                        <p className="text-3xl font-heading font-bold text-blue-600 mb-1">
-                            {approvedExpenses.length + approvedRequisitions.length}
-                        </p>
-                        <p className="text-xs text-gray-500 font-medium">
+                {/* Internal Requests */}
+                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#EEF2FF' }}>
+                    <div className="flex items-start justify-between">
+                        <p className="text-[13px] font-semibold text-gray-600">Internal Requests</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-600">
                             ${(totalExpenses + totalRequisitions).toLocaleString()}
-                        </p>
+                        </span>
+                    </div>
+                    <div className="flex items-end justify-between mt-3">
+                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
+                            {approvedExpenses.length + approvedRequisitions.length}
+                        </div>
+                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
+                            <img src="/cards/accounting (1).png" alt="" className="w-full h-full object-contain drop-shadow-md" />
+                        </div>
                     </div>
                 </div>
 
-                {/* Vendor Payments */}
-                <div className="gds-glass p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                    <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-emerald-100 rounded-xl">
-                                <PiBuildings className="text-2xl text-emerald-600" />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vendor Invoices</span>
-                        </div>
-                        <p className="text-3xl font-heading font-bold text-emerald-600 mb-1">
-                            {approvedInvoices.length}
-                        </p>
-                        <p className="text-xs text-gray-500 font-medium">
+                {/* Vendor Invoices */}
+                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#ECFDF5' }}>
+                    <div className="flex items-start justify-between">
+                        <p className="text-[13px] font-semibold text-gray-600">Vendor Invoices</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">
                             ${totalInvoices.toLocaleString()}
-                        </p>
+                        </span>
+                    </div>
+                    <div className="flex items-end justify-between mt-3">
+                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
+                            {approvedInvoices.length}
+                        </div>
+                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
+                            <img src="/online-shopping.png" alt="" className="w-full h-full object-contain drop-shadow-md" />
+                        </div>
                     </div>
                 </div>
 
-                {/* Budgets */}
-                <div className="gds-glass p-6 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                    <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-amber-100 rounded-xl">
-                                <PiHandCoins className="text-2xl text-amber-600" />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Budget Plans</span>
-                        </div>
-                        <p className="text-3xl font-heading font-bold text-amber-600 mb-1">
-                            {approvedBudgets.length}
-                        </p>
-                        <p className="text-xs text-gray-500 font-medium">
+                {/* Budget Plans */}
+                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#FFFBEB' }}>
+                    <div className="flex items-start justify-between">
+                        <p className="text-[13px] font-semibold text-gray-600">Budget Plans</p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">
                             ${totalBudgets.toLocaleString()}
-                        </p>
+                        </span>
+                    </div>
+                    <div className="flex items-end justify-between mt-3">
+                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
+                            {approvedBudgets.length}
+                        </div>
+                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
+                            <img src="/cards/order-processed.png" alt="" className="w-full h-full object-contain drop-shadow-md" />
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             {/* Batch Payment Suggestion */}

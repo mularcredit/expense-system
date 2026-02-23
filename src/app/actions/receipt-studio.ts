@@ -156,7 +156,6 @@ export async function getExpenseDetailsForReceipt(expenseId: string) {
 
 export async function getPaymentDetailsForReceipt(paymentId: string) {
     const session = await auth();
-    // ... existing code ...
     if (!session?.user?.id) throw new Error("Unauthorized");
 
     const payment = await prisma.payment.findUnique({
@@ -164,7 +163,8 @@ export async function getPaymentDetailsForReceipt(paymentId: string) {
         include: {
             requisitions: {
                 include: {
-                    user: true
+                    user: true,
+                    items: true // Fetch items for detailed breakdown
                 }
             },
             invoices: {
@@ -191,12 +191,25 @@ export async function getPaymentDetailsForReceipt(paymentId: string) {
 
     // Add requisitions
     for (const req of payment.requisitions) {
-        items.push({
-            description: req.title,
-            subtext: `Requisition (Ref: ${req.id.slice(-6)}) - ${req.category}`,
-            date: req.updatedAt,
-            amount: req.amount
-        });
+        if (req.items && req.items.length > 0) {
+            // Add individual items
+            for (const item of req.items) {
+                items.push({
+                    description: item.title,
+                    subtext: `${item.category || req.category} - Qty: ${item.quantity} @ ${req.currency || 'USD'} ${Number(item.unitPrice).toFixed(2)}`,
+                    date: item.createdAt,
+                    amount: item.totalPrice
+                });
+            }
+        } else {
+            // Fallback for requisitions without items
+            items.push({
+                description: req.title,
+                subtext: `Requisition (Ref: ${req.id.slice(-6)}) - ${req.category}`,
+                date: req.updatedAt,
+                amount: req.amount
+            });
+        }
     }
 
     // Add invoices
@@ -229,47 +242,58 @@ export async function getPaymentDetailsForReceipt(paymentId: string) {
         });
     }
 
-    // Determine Beneficiary (User or Vendor or Mixed)
-    // If it's a mix, we might just say "Mixed Beneficiaries" or use the first one.
-    // Ideally payments are grouped by beneficiary, but batch payments exist.
+    // Determine Beneficiary logic
+    // We try to find a common beneficiary if possible
     let beneficiaryName = "Various Beneficiaries";
     let beneficiaryAddress = "";
 
-    if (payment.invoices.length === 1 && items.length === 1) {
-        beneficiaryName = payment.invoices[0].vendor.name;
-        beneficiaryAddress = payment.invoices[0].vendor.address || "";
-    } else if (payment.expenses.length > 0 && items.length === payment.expenses.length) {
-        // Check if all expenses are same user
+    // 1. Check invoices
+    if (payment.invoices.length > 0) {
+        const firstVendorId = payment.invoices[0].vendorId;
+        const allSameVendor = payment.invoices.every(i => i.vendorId === firstVendorId);
+        if (allSameVendor) {
+            beneficiaryName = payment.invoices[0].vendor.name;
+            beneficiaryAddress = payment.invoices[0].vendor.address || "";
+        }
+    }
+    // 2. Check expenses
+    else if (payment.expenses.length > 0) {
         const firstUserId = payment.expenses[0].userId;
         const allSameUser = payment.expenses.every(e => e.userId === firstUserId);
         if (allSameUser) {
-            beneficiaryName = payment.expenses[0].user.name;
+            beneficiaryName = payment.expenses[0].user.name || "Unknown";
         }
-    } else if (payment.requisitions.length > 0) {
-        // Similar check
+    }
+    // 3. Check requisitions
+    else if (payment.requisitions.length > 0) {
         const firstUserId = payment.requisitions[0].userId;
-        const allSameUser = payment.requisitions.every(e => e.userId === firstUserId);
+        const allSameUser = payment.requisitions.every(r => r.userId === firstUserId);
         if (allSameUser) {
-            beneficiaryName = payment.requisitions[0].user.name;
+            beneficiaryName = payment.requisitions[0].user.name || "Unknown";
         }
     }
 
+    // Clean payment method
+    let payMethod = 'Bank Transfer';
+    if (payment.method) {
+        if (payment.method === 'MOBILE_MONEY') payMethod = 'Mobile Money';
+        else if (payment.method === 'CASH') payMethod = 'Cash';
+        else payMethod = payment.method.replace(/_/g, ' ');
+    }
+
     return {
-        receiptNo: `REC-${new Date().getFullYear()}-${payment.id.slice(-4).toUpperCase()}`,
+        receiptNo: `RCT-${new Date().getFullYear()}-${payment.id.slice(0, 6).toUpperCase()}`,
         date: payment.processedAt || payment.updatedAt,
         amount: payment.amount,
         beneficiary: {
             name: beneficiaryName,
             address: beneficiaryAddress
         },
-        paymentMode: payment.method === 'BANK_TRANSFER' ? 'Bank Transfer' :
-            payment.method === 'MOBILE_MONEY' ? 'Mobile Money' :
-                payment.method === 'CASH' ? 'Cash' :
-                    payment.method?.replace('_', ' ') || 'Bank Transfer',
+        paymentMode: payMethod,
         paymentRef: payment.reference || `TRX-${payment.id.slice(0, 8)}`,
         items: items,
         approvals: {
-            requestedBy: payment.maker.name,
+            requestedBy: payment.maker?.name || "Unknown",
             authorizedBy: payment.checker?.name || "Pending",
             paidBy: "Finance Dept",
             receivedBy: beneficiaryName

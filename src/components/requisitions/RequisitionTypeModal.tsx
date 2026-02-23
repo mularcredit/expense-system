@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { PiPlus, PiFilePlus, PiListPlus, PiX } from "react-icons/pi";
+import { PiX } from "react-icons/pi";
 import { AddItemModal } from "@/components/requisitions/AddItemModal";
 
 interface RequisitionTypeModalProps {
@@ -125,8 +125,8 @@ export function RequisitionTypeModal({ isOpen, onClose, existingRequisitions = [
                             }}
                             className="flex items-start gap-4 p-4 rounded-xl border border-gray-200 hover:border-[#29258D] hover:bg-[#29258D]/5 transition-all group text-left"
                         >
-                            <div className="p-3 rounded-lg bg-[#29258D]/10 text-[#29258D] group-hover:scale-110 transition-transform">
-                                <PiFilePlus className="text-2xl" />
+                            <div className="shrink-0 w-14 h-14 group-hover:scale-110 transition-transform">
+                                <img src="/cards/online-payment (1).png" alt="New Requisition" className="w-full h-full object-contain drop-shadow-sm" />
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-900 group-hover:text-[#29258D]">New Requisition</h3>
@@ -140,8 +140,8 @@ export function RequisitionTypeModal({ isOpen, onClose, existingRequisitions = [
                             onClick={() => setShowAddItemModal(true)}
                             className="flex items-start gap-4 p-4 rounded-xl border border-gray-200 hover:border-emerald-600 hover:bg-emerald-50 transition-all group text-left"
                         >
-                            <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600 group-hover:scale-110 transition-transform">
-                                <PiListPlus className="text-2xl" />
+                            <div className="shrink-0 w-14 h-14 group-hover:scale-110 transition-transform">
+                                <img src="/cards/online-payment (2).png" alt="Add Item" className="w-full h-full object-contain drop-shadow-sm" />
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-900 group-hover:text-emerald-700">Add Item to Existing</h3>

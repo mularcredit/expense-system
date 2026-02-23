@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { IconType } from "react-icons";
-import { Card } from "@/components/ui/Card";
+import Image from "next/image";
 
 interface StatsCardProps {
     title: string;
@@ -9,39 +9,74 @@ interface StatsCardProps {
     trendUp?: boolean;
     icon: IconType;
     color?: "purple" | "cyan" | "emerald" | "blue";
+    image?: string;
+    bgColor?: string; // e.g. '#EEF2FF'
 }
 
-export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "purple" }: StatsCardProps) {
-    const colorStyles = {
-        purple: "text-[#29258D] bg-[#29258D]/10 border-[#29258D]/10",
-        cyan: "text-[#06B6D4] bg-[#06B6D4]/10 border-[#06B6D4]/10",
-        emerald: "text-emerald-500 bg-emerald-500/10 border-emerald-500/10",
-        blue: "text-blue-500 bg-blue-500/10 border-blue-500/10",
-    };
+export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "purple", image, bgColor }: StatsCardProps) {
+    const trendColor = trendUp
+        ? "text-emerald-600 bg-emerald-50"
+        : "text-rose-500 bg-rose-50";
 
     return (
-        <Card className="p-6 group cursor-pointer relative overflow-hidden">
-            <div className="relative z-10 flex justify-between items-start mb-6">
-                <div className={cn("p-4 rounded-xl transition-all duration-300 group-hover:scale-110 border", colorStyles[color])}>
-                    <Icon className="text-2xl" />
-                </div>
+        <div
+            className={cn(
+                "relative rounded-2xl border border-gray-100 overflow-hidden",
+                "hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group",
+                "p-6 pb-5 flex flex-col justify-between",
+                "min-h-[148px]"
+            )}
+            style={{ backgroundColor: bgColor || '#ffffff' }}
+        >
+            {/* Top row: title + trend badge */}
+            <div className="flex items-start justify-between">
+                <p className="text-[11px] font-semibold text-gray-600 leading-snug max-w-[60%]">
+                    {title}
+                </p>
                 {trend && (
-                    <div className={cn(
-                        "px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider border",
-                        trendUp
-                            ? "text-emerald-600 bg-emerald-50 border-emerald-100"
-                            : "text-[#29258D] bg-[#29258D]/5 border-[#29258D]/10"
+                    <span className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0",
+                        trendColor
                     )}>
-                        {trend}
-                    </div>
+                        {trendUp ? "↑" : "↓"} {trend}
+                    </span>
                 )}
             </div>
-            <div className="relative z-10">
-                <h3 className="text-[11px] font-bold tracking-[0.05em] text-gray-400 mb-1 uppercase">{title}</h3>
-                <div className="text-3xl font-bold text-[#0f172a] tracking-tight text-shadow-sm">
+
+            {/* Bottom row: value left, image right */}
+            <div className="flex items-end justify-between mt-3">
+                <div className="text-[2rem] font-normal text-gray-500 leading-none tracking-tight">
                     {value}
                 </div>
+
+                {/* Illustration */}
+                <div className="relative w-[90px] h-[90px] shrink-0 -mb-5 -mr-3 group-hover:scale-105 transition-transform duration-300">
+                    {image ? (
+                        <Image
+                            src={image}
+                            alt={title}
+                            fill
+                            className="object-contain drop-shadow-md"
+                        />
+                    ) : (
+                        <div className={cn(
+                            "w-full h-full flex items-center justify-center rounded-2xl",
+                            color === "purple" && "bg-[#29258D]/10",
+                            color === "cyan" && "bg-cyan-500/10",
+                            color === "emerald" && "bg-emerald-500/10",
+                            color === "blue" && "bg-blue-500/10",
+                        )}>
+                            <Icon className={cn(
+                                "text-4xl",
+                                color === "purple" && "text-[#29258D]",
+                                color === "cyan" && "text-cyan-500",
+                                color === "emerald" && "text-emerald-500",
+                                color === "blue" && "text-blue-500",
+                            )} />
+                        </div>
+                    )}
+                </div>
             </div>
-        </Card>
+        </div>
     );
 }

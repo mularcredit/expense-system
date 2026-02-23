@@ -9,45 +9,45 @@ datasource db {
 }
 
 model User {
-  id                  String              @id @default(cuid())
-  email               String              @unique
-  name                String
-  password            String
-  role                String              @default("EMPLOYEE")
-  department          String?
-  position            String?
-  managerId           String?
-  bankAccount         String?
-  phoneNumber         String?
-  profileImage        String?
-  isActive            Boolean             @default(true)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  customRoleId        String?
-  accountStatus       String              @default("PENDING")
-  resetToken          String?
-  resetTokenExpiry    DateTime?
-  stripeAccountId     String?
-  stripeConnectStatus String?
-  approvals           Approval[]
-  itemApprovals       ItemApproval[]
-  expenses            Expense[]
-  createdInvoices     Invoice[]
-  monthlyBudgets      MonthlyBudget[]
-  notifications       Notification[]
-  checkedPayments     Payment[]           @relation("PaymentChecker")
-  madePayments        Payment[]           @relation("PaymentMaker")
-  requisitions        Requisition[]
-  approvedSchedules   Schedule[]          @relation("ScheduleApprover")
-  createdSchedules    Schedule[]          @relation("ScheduleCreator")
-  customRole          Role?               @relation(fields: [customRoleId], references: [id])
-  manager             User?               @relation("ManagerSubordinates", fields: [managerId], references: [id])
-  subordinates        User[]              @relation("ManagerSubordinates")
-  wallet              Wallet?
-  walletTransactions  WalletTransaction[]
-  assets              Asset[]
-  salaryBatchesCreated SalaryBatch[]       @relation("SalaryCreator")
-  salaryBatchesApproved SalaryBatch[]      @relation("SalaryApprover")
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  name                  String
+  password              String
+  role                  String              @default("EMPLOYEE")
+  department            String?
+  position              String?
+  managerId             String?
+  bankAccount           String?
+  phoneNumber           String?
+  profileImage          String?
+  isActive              Boolean             @default(true)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  customRoleId          String?
+  accountStatus         String              @default("PENDING")
+  resetToken            String?
+  resetTokenExpiry      DateTime?
+  stripeAccountId       String?
+  stripeConnectStatus   String?
+  approvals             Approval[]
+  assets                Asset[]
+  expenses              Expense[]
+  createdInvoices       Invoice[]
+  itemApprovals         ItemApproval[]
+  monthlyBudgets        MonthlyBudget[]
+  notifications         Notification[]
+  checkedPayments       Payment[]           @relation("PaymentChecker")
+  madePayments          Payment[]           @relation("PaymentMaker")
+  requisitions          Requisition[]
+  salaryBatchesApproved SalaryBatch[]       @relation("SalaryApprover")
+  salaryBatchesCreated  SalaryBatch[]       @relation("SalaryCreator")
+  approvedSchedules     Schedule[]          @relation("ScheduleApprover")
+  createdSchedules      Schedule[]          @relation("ScheduleCreator")
+  customRole            Role?               @relation(fields: [customRoleId], references: [id])
+  manager               User?               @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates          User[]              @relation("ManagerSubordinates")
+  wallet                Wallet?
+  walletTransactions    WalletTransaction[]
 
   @@index([email])
   @@index([managerId])
@@ -119,15 +119,15 @@ model ScheduleExecution {
 }
 
 model Role {
-  id          String           @id @default(cuid())
-  name        String           @unique
-  description String?
-  isSystem    Boolean          @default(false)
-  maxApprovalLimit Float?      @default(100)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  permissions RolePermission[]
-  users       User[]
+  id               String           @id @default(cuid())
+  name             String           @unique
+  description      String?
+  isSystem         Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  maxApprovalLimit Float?           @default(100)
+  permissions      RolePermission[]
+  users            User[]
 }
 
 model Permission {
@@ -177,55 +177,54 @@ model WalletTransaction {
 }
 
 model Requisition {
-  id                    String             @id @default(cuid())
+  id                    String            @id @default(cuid())
   userId                String
   title                 String
   description           String
   amount                Float
-  currency              String             @default("USD")
+  currency              String            @default("USD")
   category              String
   businessJustification String
   expectedDate          DateTime?
-  type                  String             @default("STANDARD")
+  type                  String            @default("STANDARD")
   branch                String?
   department            String?
-  status                String             @default("PENDING")
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  status                String            @default("PENDING")
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  paymentId             String?
   approvals             Approval[]
   expenses              Expense[]
   invoices              Invoice[]
-  items                 RequisitionItem[]
-  user                  User               @relation(fields: [userId], references: [id])
-  paymentId             String?
-  payment               Payment?           @relation(fields: [paymentId], references: [id])
   journalEntries        JournalEntry[]
+  payment               Payment?          @relation(fields: [paymentId], references: [id])
+  user                  User              @relation(fields: [userId], references: [id])
+  items                 RequisitionItem[]
 
   @@index([userId])
   @@index([status])
 }
 
 model RequisitionItem {
-  id            String      @id @default(cuid())
+  id            String         @id @default(cuid())
   requisitionId String
   title         String
   description   String?
-  quantity      Int         @default(1)
+  quantity      Int            @default(1)
   unitPrice     Float
   totalPrice    Float
   category      String
-  status        String      @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
-  type          String      @default("STANDARD") // STANDARD, SOUTH_SUDAN, SOUTH_SUDAN_STRICT
-  isInitial     Boolean     @default(true) // true if created with requisition, false if added later
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  isInitial     Boolean        @default(true)
+  status        String         @default("PENDING")
+  type          String         @default("STANDARD")
   approvals     ItemApproval[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  requisition   Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  requisition   Requisition    @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
 
   @@index([requisitionId])
   @@index([status])
 }
-
 
 model CustomCategory {
   id          String   @id @default(cuid())
@@ -244,7 +243,7 @@ model ItemApproval {
   requisitionItemId String
   approverId        String
   level             Int             @default(1)
-  status            String          @default("PENDING") // PENDING, APPROVED, REJECTED
+  status            String          @default("PENDING")
   comments          String?
   approvedAt        DateTime?
   createdAt         DateTime        @default(now())
@@ -257,24 +256,23 @@ model ItemApproval {
   @@index([status])
 }
 
-
 model MonthlyBudget {
-  id          String       @id @default(cuid())
-  userId      String
-  month       Int
-  year        Int
-  branch      String
-  department  String
-  totalAmount Float        @default(0)
-  status      String       @default("PENDING")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  approvals   Approval[]
-  items       BudgetItem[]
-  user        User         @relation(fields: [userId], references: [id])
-  paymentId   String?
-  payment     Payment?     @relation(fields: [paymentId], references: [id])
+  id             String         @id @default(cuid())
+  userId         String
+  month          Int
+  year           Int
+  branch         String
+  department     String
+  totalAmount    Float          @default(0)
+  status         String         @default("PENDING")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  paymentId      String?
+  approvals      Approval[]
+  items          BudgetItem[]
   journalEntries JournalEntry[]
+  payment        Payment?       @relation(fields: [paymentId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([status])
@@ -292,31 +290,31 @@ model BudgetItem {
 }
 
 model Expense {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String
   requisitionId  String?
   title          String
   description    String?
   amount         Float
-  currency       String       @default("USD")
+  currency       String         @default("USD")
   category       String
   expenseDate    DateTime
   merchant       String?
-  paymentMethod  String       @default("PERSONAL_CARD")
-  isReimbursable Boolean      @default(true)
-  isBillable     Boolean      @default(false)
+  paymentMethod  String         @default("PERSONAL_CARD")
+  isReimbursable Boolean        @default(true)
+  isBillable     Boolean        @default(false)
   receiptUrl     String?
-  status         String       @default("DRAFT")
+  status         String         @default("DRAFT")
   paidAt         DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   paymentId      String?
   approvals      Approval[]
-  payment         Payment?     @relation(fields: [paymentId], references: [id])
-  requisition     Requisition? @relation(fields: [requisitionId], references: [id])
-  user            User         @relation(fields: [userId], references: [id])
-  journalEntries  JournalEntry[]
-  salaryBatch     SalaryBatch?
+  payment        Payment?       @relation(fields: [paymentId], references: [id])
+  requisition    Requisition?   @relation(fields: [requisitionId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+  journalEntries JournalEntry[]
+  salaryBatch    SalaryBatch?
 
   @@index([userId])
   @@index([status])
@@ -351,30 +349,30 @@ model Approval {
 }
 
 model Invoice {
-  id            String            @id @default(cuid())
-  vendorId      String
-  invoiceNumber String            @unique
-  invoiceDate   DateTime
-  dueDate       DateTime
-  amount        Float
-  taxAmount     Float             @default(0)
-  currency      String            @default("USD")
-  description   String?
-  notes         String?
-  status        String            @default("DRAFT")
-  paymentStatus String            @default("UNPAID")
-  paymentTerms  String?
-  requisitionId String?
-  fileUrl       String?
-  createdById   String
-  paidAt        DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  paymentId     String?
-  approvals     Approval[]
-  createdBy     User              @relation(fields: [createdById], references: [id])
-  payment       Payment?          @relation(fields: [paymentId], references: [id])
-  requisition   Requisition?      @relation(fields: [requisitionId], references: [id])
+  id             String            @id @default(cuid())
+  vendorId       String
+  invoiceNumber  String            @unique
+  invoiceDate    DateTime
+  dueDate        DateTime
+  amount         Float
+  taxAmount      Float             @default(0)
+  currency       String            @default("USD")
+  description    String?
+  notes          String?
+  status         String            @default("DRAFT")
+  paymentStatus  String            @default("UNPAID")
+  paymentTerms   String?
+  requisitionId  String?
+  fileUrl        String?
+  createdById    String
+  paidAt         DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  paymentId      String?
+  approvals      Approval[]
+  createdBy      User              @relation(fields: [createdById], references: [id])
+  payment        Payment?          @relation(fields: [paymentId], references: [id])
+  requisition    Requisition?      @relation(fields: [requisitionId], references: [id])
   vendor         Vendor            @relation(fields: [vendorId], references: [id])
   items          InvoiceLineItem[]
   journalEntries JournalEntry[]
@@ -387,25 +385,25 @@ model Invoice {
 }
 
 model Payment {
-  id           String    @id @default(cuid())
-  amount       Float
-  currency     String    @default("USD")
-  status       String    @default("PENDING_AUTHORIZATION")
-  makerId      String
-  checkerId    String?
-  method       String    @default("BANK_TRANSFER")
-  reference    String?
-  notes        String?
-  authorizedAt DateTime?
-  processedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  expenses     Expense[]
-  invoices     Invoice[]
-  requisitions Requisition[]
+  id             String          @id @default(cuid())
+  amount         Float
+  currency       String          @default("USD")
+  status         String          @default("PENDING_AUTHORIZATION")
+  makerId        String
+  checkerId      String?
+  method         String          @default("BANK_TRANSFER")
+  reference      String?
+  notes          String?
+  authorizedAt   DateTime?
+  processedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  expenses       Expense[]
+  invoices       Invoice[]
   monthlyBudgets MonthlyBudget[]
-  checker      User?     @relation("PaymentChecker", fields: [checkerId], references: [id])
-  maker        User      @relation("PaymentMaker", fields: [makerId], references: [id])
+  checker        User?           @relation("PaymentChecker", fields: [checkerId], references: [id])
+  maker          User            @relation("PaymentMaker", fields: [makerId], references: [id])
+  requisitions   Requisition[]
 
   @@index([makerId])
   @@index([checkerId])
@@ -437,7 +435,6 @@ model Vendor {
   city            String?
   country         String?
   category        String?
-  description     String?
   isPreferred     Boolean    @default(false)
   isActive        Boolean    @default(true)
   paymentTerms    String?
@@ -448,6 +445,7 @@ model Vendor {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   stripeAccountId String?
+  description     String?
   invoices        Invoice[]
   schedules       Schedule[]
 
@@ -559,26 +557,26 @@ model Account {
 }
 
 model JournalEntry {
-  id           String        @id @default(cuid())
-  date         DateTime
-  description  String
-  reference    String?
-  expenseId      String?
-  invoiceId      String?
-  saleId         String?
-  paymentId      String?
-  creditNoteId   String?
-  requisitionId  String?
+  id              String         @id @default(cuid())
+  date            DateTime
+  description     String
+  reference       String?
+  expenseId       String?
+  invoiceId       String?
+  saleId          String?
+  paymentId       String?
+  creditNoteId    String?
+  status          String         @default("POSTED")
+  createdAt       DateTime       @default(now())
+  createdBy       String?
   monthlyBudgetId String?
-  status         String        @default("POSTED")
-  createdAt      DateTime      @default(now())
-  createdBy      String?
+  requisitionId   String?
   creditNote      CreditNote?    @relation(fields: [creditNoteId], references: [id])
-  requisition     Requisition?   @relation(fields: [requisitionId], references: [id])
-  monthlyBudget   MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
   expense         Expense?       @relation(fields: [expenseId], references: [id])
   invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
-  lines          JournalLine[]
+  monthlyBudget   MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
+  requisition     Requisition?   @relation(fields: [requisitionId], references: [id])
+  lines           JournalLine[]
 
   @@index([date])
 }
@@ -623,62 +621,47 @@ model Policy {
 }
 
 model Asset {
-  id             String    @id @default(cuid())
-  name           String
-  description    String?
-  serialNumber   String?   @unique
-  assetTag       String?   @unique
-  category       String
-  
-  // Financials
-  purchaseDate   DateTime
-  purchasePrice  Float
-  currency       String    @default("USD")
-  currentValue   Float?
-  usefulLife     Int?      // In months
-  salvageValue   Float?    @default(0)
-  depreciationMethod String? // STRAIGHT_LINE, DECLINING_BALANCE, NONE
-  depreciationRate Float?    // Annual rate %
-  
-  // Status & Location
-  status         String    @default("ACTIVE") // ACTIVE, MAINTENANCE, RETIRED, LOST, DISPOSED
-  condition      String?   // NEW, GOOD, FAIR, POOR
-  location       String?   // Office, Branch, Warehouse
-  
-  // Assignment
-  assignedToId   String?
-  assignedTo     User?     @relation(fields: [assignedToId], references: [id])
-  
-  // Warranty
-  warrantyExpiry DateTime?
-  vendor         String?
-  
-  // Metadata
-  notes          String?
-  imageUrl       String?
-  
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  name               String
+  description        String?
+  serialNumber       String?   @unique
+  assetTag           String?   @unique
+  category           String
+  purchaseDate       DateTime
+  purchasePrice      Float
+  currency           String    @default("USD")
+  currentValue       Float?
+  usefulLife         Int?
+  salvageValue       Float?    @default(0)
+  depreciationMethod String?
+  depreciationRate   Float?
+  status             String    @default("ACTIVE")
+  condition          String?
+  location           String?
+  assignedToId       String?
+  warrantyExpiry     DateTime?
+  vendor             String?
+  notes              String?
+  imageUrl           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  assignedTo         User?     @relation(fields: [assignedToId], references: [id])
 
   @@index([status])
   @@index([category])
   @@index([assignedToId])
 }
 
-// ============================================
-// PERIOD MANAGEMENT & TAX COMPLIANCE
-// ============================================
-
 model FiscalYear {
-  id          String            @id @default(cuid())
-  name        String            // e.g., "FY 2026"
-  startDate   DateTime
-  endDate     DateTime
-  isCurrent   Boolean           @default(false)
-  isClosed    Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  periods     AccountingPeriod[]
+  id        String             @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isCurrent Boolean            @default(false)
+  isClosed  Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  periods   AccountingPeriod[]
 
   @@index([isCurrent])
 }
@@ -686,8 +669,8 @@ model FiscalYear {
 model AccountingPeriod {
   id           String     @id @default(cuid())
   fiscalYearId String
-  name         String     // e.g., "January 2026", "Q1 2026"
-  periodType   String     // MONTHLY, QUARTERLY, ANNUAL
+  name         String
+  periodType   String
   startDate    DateTime
   endDate      DateTime
   isClosed     Boolean    @default(false)
@@ -703,64 +686,55 @@ model AccountingPeriod {
 }
 
 model TaxRate {
-  id          String   @id @default(cuid())
-  name        String   // e.g., "VAT", "Sales Tax", "Withholding Tax"
-  code        String   @unique // e.g., "VAT-18", "WHT-10"
-  rate        Float    // Percentage (e.g., 18.0 for 18%)
-  type        String   // VAT, SALES_TAX, WITHHOLDING, EXCISE
-  description String?
-  isActive    Boolean  @default(true)
-  effectiveFrom DateTime @default(now())
+  id            String    @id @default(cuid())
+  name          String
+  code          String    @unique
+  rate          Float
+  type          String
+  description   String?
+  isActive      Boolean   @default(true)
+  effectiveFrom DateTime  @default(now())
   effectiveTo   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([code])
   @@index([isActive])
 }
 
-// ============================================
-// SALARY / PAYROLL MANAGEMENT
-// ============================================
-
 model SalaryBatch {
-  id              String         @id @default(cuid())
-  title           String         // e.g., "February 2026 Payroll"
-  month           Int
-  year            Int
-  totalAmount     Float
-  currency        String         @default("USD")
-  status          String         @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, PAID
-  notes           String?
-  createdById     String
-  approvedById    String?
-  paidAt          DateTime?
-  
-  // Relations
-  records         SalaryRecord[]
-  expense         Expense?       @relation(fields: [expenseId], references: [id])
-  expenseId       String?        @unique // Link to the single expense entry
-  createdBy       User           @relation("SalaryCreator", fields: [createdById], references: [id])
-  approvedBy      User?          @relation("SalaryApprover", fields: [approvedById], references: [id])
-  
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id           String         @id @default(cuid())
+  title        String
+  month        Int
+  year         Int
+  totalAmount  Float
+  currency     String         @default("USD")
+  status       String         @default("DRAFT")
+  notes        String?
+  createdById  String
+  approvedById String?
+  paidAt       DateTime?
+  expenseId    String?        @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  approvedBy   User?          @relation("SalaryApprover", fields: [approvedById], references: [id])
+  createdBy    User           @relation("SalaryCreator", fields: [createdById], references: [id])
+  expense      Expense?       @relation(fields: [expenseId], references: [id])
+  records      SalaryRecord[]
 
   @@index([month, year])
   @@index([status])
 }
 
 model SalaryRecord {
-  id              String       @id @default(cuid())
-  batchId         String
-  employeeName    String
-  bankName        String?
-  accountNumber   String?
-  amount          Float
-  notes           String?
-  
-  // Relation to parent batch
-  batch           SalaryBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  batchId       String
+  employeeName  String
+  bankName      String?
+  accountNumber String?
+  amount        Float
+  notes         String?
+  batch         SalaryBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   @@index([batchId])
   @@index([employeeName])

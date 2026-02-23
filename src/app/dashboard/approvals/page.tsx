@@ -55,22 +55,22 @@ export default async function ApprovalsPage() {
         orderBy: { createdAt: 'desc' }
     });
 
-    // Separate approvals by type and extract the items with approval IDs
-    const pendingExpenses = myPendingApprovals
-        .filter(a => a.expense)
-        .map(a => ({ ...a.expense!, approvalId: a.id }));
+    // Separate approvals by type and extract the items with approval IDs, deduplicating on underlying item ID
+    const pendingExpenses = Array.from(new Map(
+        myPendingApprovals.filter(a => a.expense).map(a => [a.expense!.id, { ...a.expense!, approvalId: a.id }])
+    ).values());
 
-    const pendingRequisitions = myPendingApprovals
-        .filter(a => a.requisition)
-        .map(a => ({ ...a.requisition!, approvalId: a.id }));
+    const pendingRequisitions = Array.from(new Map(
+        myPendingApprovals.filter(a => a.requisition).map(a => [a.requisition!.id, { ...a.requisition!, approvalId: a.id }])
+    ).values());
 
-    const pendingBudgets = myPendingApprovals
-        .filter(a => a.monthlyBudget)
-        .map(a => ({ ...a.monthlyBudget!, approvalId: a.id }));
+    const pendingBudgets = Array.from(new Map(
+        myPendingApprovals.filter(a => a.monthlyBudget).map(a => [a.monthlyBudget!.id, { ...a.monthlyBudget!, approvalId: a.id }])
+    ).values());
 
-    const pendingInvoices = myPendingApprovals
-        .filter(a => a.invoice)
-        .map(a => ({ ...a.invoice!, approvalId: a.id }));
+    const pendingInvoices = Array.from(new Map(
+        myPendingApprovals.filter(a => a.invoice).map(a => [a.invoice!.id, { ...a.invoice!, approvalId: a.id }])
+    ).values());
 
     // Fetch approval history
     const approvalHistory = await prisma.approval.findMany({

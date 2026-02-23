@@ -53,38 +53,27 @@ export default async function DashboardPage() {
     const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
     // Fetch comprehensive data
-    const [
-        thisMonthExpenses,
-        lastMonthExpenses,
-        pendingApprovals,
-        draftExpenses,
-        allExpenses,
-        wallet,
-        requisitions,
-        categories,
-        departments,
-        stripeAccount,
-        thisMonthSales,
-        lastMonthSales,
-        activeCustomersCount,
-        teamCount
-    ] = await Promise.all([
-        prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayThisMonth } }, orderBy: { createdAt: 'desc' } }),
-        prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayLastMonth, lte: lastDayLastMonth } } }),
-        prisma.expense.findMany({ where: { ...expenseFilter, status: 'PENDING_APPROVAL' }, orderBy: { createdAt: 'desc' }, take: 10 }),
-        prisma.expense.findMany({ where: { ...expenseFilter, status: 'DRAFT' } }),
-        prisma.expense.findMany({ where: { ...expenseFilter }, orderBy: { expenseDate: 'desc' }, take: 100 }),
-        prisma.wallet.findUnique({ where: { userId }, include: { transactions: { take: 5, orderBy: { createdAt: 'desc' } } } }),
-        prisma.requisition.findMany({ where: { userId, status: 'PENDING' } }),
-        prisma.category.findMany({ where: { isActive: true }, select: { name: true } }),
-        prisma.user.findMany({ where: { department: { not: null } }, select: { department: true }, distinct: ['department'] }),
-        (currentUser as any)?.stripeAccountId ? prisma.user.findUnique({ where: { id: userId }, select: { stripeAccountId: true, stripeConnectStatus: true } as any }) : Promise.resolve(null as any),
-        // Only fetch sales for System Admin
-        isSystemAdmin ? prisma.sale.aggregate({ where: { issueDate: { gte: firstDayThisMonth }, status: { not: 'DRAFT' } }, _sum: { totalAmount: true } }) : Promise.resolve({ _sum: { totalAmount: 0 } }),
-        isSystemAdmin ? prisma.sale.aggregate({ where: { issueDate: { gte: firstDayLastMonth, lte: lastDayLastMonth }, status: { not: 'DRAFT' } }, _sum: { totalAmount: true } }) : Promise.resolve({ _sum: { totalAmount: 0 } }),
-        prisma.customer.count({ where: { isActive: true } }),
-        prisma.user.count({ where: { isActive: true, role: { not: 'SYSTEM_ADMIN' } } })
-    ]);
+    // Execute database queries sequentially to prevent exhausting Neon connection pool limits
+    const thisMonthExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayThisMonth } }, orderBy: { createdAt: 'desc' } });
+    const lastMonthExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayLastMonth, lte: lastDayLastMonth } } });
+    const pendingApprovals = await prisma.expense.findMany({ where: { ...expenseFilter, status: 'PENDING_APPROVAL' }, orderBy: { createdAt: 'desc' }, take: 10 });
+    const draftExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, status: 'DRAFT' } });
+    const allExpenses = await prisma.expense.findMany({ where: { ...expenseFilter }, orderBy: { expenseDate: 'desc' }, take: 100 });
+
+    // Batch 2
+    const wallet = await prisma.wallet.findUnique({ where: { userId }, include: { transactions: { take: 5, orderBy: { createdAt: 'desc' } } } });
+    const requisitions = await prisma.requisition.findMany({ where: { userId, status: 'PENDING' } });
+    const categories = await prisma.category.findMany({ where: { isActive: true }, select: { name: true } });
+    const departments = await prisma.user.findMany({ where: { department: { not: null } }, select: { department: true }, distinct: ['department'] });
+
+    // Batch 3
+    const stripeAccount = (currentUser as any)?.stripeAccountId ? await prisma.user.findUnique({ where: { id: userId }, select: { stripeAccountId: true, stripeConnectStatus: true } as any }) : null;
+    const thisMonthSales = isSystemAdmin ? await prisma.sale.aggregate({ where: { issueDate: { gte: firstDayThisMonth }, status: { not: 'DRAFT' } }, _sum: { totalAmount: true } }) : { _sum: { totalAmount: 0 } };
+    const lastMonthSales = isSystemAdmin ? await prisma.sale.aggregate({ where: { issueDate: { gte: firstDayLastMonth, lte: lastDayLastMonth }, status: { not: 'DRAFT' } }, _sum: { totalAmount: true } }) : { _sum: { totalAmount: 0 } };
+
+    // Batch 4
+    const activeCustomersCount = await prisma.customer.count({ where: { isActive: true } });
+    const teamCount = await prisma.user.count({ where: { isActive: true, role: { not: 'SYSTEM_ADMIN' } } });
 
     let stripeBalance = 0;
     let isStripeConnected = false;
@@ -173,6 +162,7 @@ export default async function DashboardPage() {
                     trendUp={monthOverMonthChange <= 0}
                     icon={PiInvoice}
                     color="purple"
+                    image="/cards/budget.png"
                 />
                 <StatsCard
                     title="Pending Approvals"
@@ -181,14 +171,18 @@ export default async function DashboardPage() {
                     trendUp={pendingTotal === 0}
                     icon={PiClock}
                     color="blue"
+                    image="/cards/accounting (1).png"
+                    bgColor="#EEF2FF"
                 />
                 <StatsCard
                     title="Avg. Daily Spend"
                     value={`$${avgDailySpend.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-                    trend="Based on 30-day avg"
+                    trend="30-day avg"
                     trendUp={true}
                     icon={PiTrendUp}
                     color="cyan"
+                    image="/cards/pos (2).png"
+                    bgColor="#ECFEFF"
                 />
                 <StatsCard
                     title="Policy Compliance"
@@ -197,6 +191,8 @@ export default async function DashboardPage() {
                     trendUp={approvalRate > 80}
                     icon={PiShieldCheck}
                     color="emerald"
+                    image="/cards/order-processed.png"
+                    bgColor="#ECFDF5"
                 />
             </div>
 
