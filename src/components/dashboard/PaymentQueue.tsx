@@ -348,12 +348,12 @@ export function PaymentQueue({
             <div className="flex flex-col lg:flex-row gap-8 items-start">
 
                 {/* ── VERTICAL STEPPER SIDEBAR ── */}
-                <div className="w-full lg:w-[280px] shrink-0 bg-[#0f1023] rounded-3xl p-8 sticky top-6 shadow-2xl border border-white/5 bg-[url('/assets/grain.png')]">
+                <div className="w-full lg:w-[260px] xl:w-[280px] shrink-0 bg-[#0f1023] rounded-3xl p-6 lg:p-8 sticky top-6 shadow-2xl border border-white/5 bg-[url('/assets/grain.png')]">
 
                     {/* Header text inside stepper */}
-                    <div className="mb-10 pl-2">
-                        <h3 className="text-white font-bold text-lg">Payment Process</h3>
-                        <p className="text-white/40 text-xs mt-1">Follow the steps to complete payouts.</p>
+                    <div className="mb-6 lg:mb-10 pl-2">
+                        <h3 className="text-white font-bold text-base lg:text-lg">Payment Process</h3>
+                        <p className="text-white/40 text-[10px] lg:text-xs mt-1">Follow the steps to complete payouts.</p>
                     </div>
 
                     <div className="relative space-y-0">
@@ -377,7 +377,7 @@ export function PaymentQueue({
                                 >
                                     {/* Icon Circle */}
                                     <div className={cn(
-                                        "w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-300",
+                                        "w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-300",
                                         isActive
                                             ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-110"
                                             : isPast

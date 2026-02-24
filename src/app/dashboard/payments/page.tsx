@@ -3,10 +3,15 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import {
     PiTrendUp,
-    PiHandCoins
+    PiHandCoins,
+    PiInvoice,
+    PiUser,
+    PiBuildings,
+    PiFileText
 } from "react-icons/pi";
 import { PaymentQueue } from "../../../components/dashboard/PaymentQueue";
 import { stripe } from "@/lib/stripe";
+import { StatsCard } from "@/components/dashboard/StatsCard";
 
 export default async function PaymentsPage() {
     const session = await auth();
@@ -175,92 +180,56 @@ export default async function PaymentsPage() {
     return (
         <div className="space-y-8 animate-fade-in-up pb-20">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="flex items-end justify-between">
                 <div>
-                    <h1 className="text-4xl font-heading font-bold text-gds-text-main mb-2 tracking-tight">
-                        Payment Center
-                    </h1>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide border-l-2 border-[#5e48b8] pl-3">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Payment Center</h1>
+                    <p className="text-gray-400 text-sm font-medium tracking-wide border-l-2 border-[#29258D] pl-3">
                         Process reimbursements, vendor payments and requisitions
                     </p>
                 </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-
-                {/* Total Pending */}
-                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] bg-white group cursor-pointer hover:-translate-y-0.5 transition-all duration-300">
-                    <div className="flex items-start justify-between">
-                        <p className="text-[13px] font-semibold text-gray-600">Total Pending</p>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-600">
-                            {approvedExpenses.length + approvedInvoices.length + approvedRequisitions.length + approvedBudgets.length} items
-                        </span>
-                    </div>
-                    <div className="flex items-end justify-between mt-3">
-                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
-                            ${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
-                            <img src="/cards/online-payment (1).png" alt="" className="w-full h-full object-contain drop-shadow-md" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Internal Requests */}
-                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#EEF2FF' }}>
-                    <div className="flex items-start justify-between">
-                        <p className="text-[13px] font-semibold text-gray-600">Internal Requests</p>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-600">
-                            ${(totalExpenses + totalRequisitions).toLocaleString()}
-                        </span>
-                    </div>
-                    <div className="flex items-end justify-between mt-3">
-                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
-                            {approvedExpenses.length + approvedRequisitions.length}
-                        </div>
-                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
-                            <img src="/cards/accounting (1).png" alt="" className="w-full h-full object-contain drop-shadow-md" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Vendor Invoices */}
-                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#ECFDF5' }}>
-                    <div className="flex items-start justify-between">
-                        <p className="text-[13px] font-semibold text-gray-600">Vendor Invoices</p>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">
-                            ${totalInvoices.toLocaleString()}
-                        </span>
-                    </div>
-                    <div className="flex items-end justify-between mt-3">
-                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
-                            {approvedInvoices.length}
-                        </div>
-                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
-                            <img src="/online-shopping.png" alt="" className="w-full h-full object-contain drop-shadow-md" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Budget Plans */}
-                <div className="relative rounded-2xl border border-gray-100 overflow-hidden p-5 pb-4 flex flex-col justify-between min-h-[136px] group cursor-pointer hover:-translate-y-0.5 transition-all duration-300" style={{ backgroundColor: '#FFFBEB' }}>
-                    <div className="flex items-start justify-between">
-                        <p className="text-[13px] font-semibold text-gray-600">Budget Plans</p>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600">
-                            ${totalBudgets.toLocaleString()}
-                        </span>
-                    </div>
-                    <div className="flex items-end justify-between mt-3">
-                        <div className="text-[1.75rem] font-normal text-gray-500 leading-none tracking-tight">
-                            {approvedBudgets.length}
-                        </div>
-                        <div className="shrink-0 w-[80px] h-[80px] -mb-4 -mr-2 group-hover:scale-105 transition-transform duration-300">
-                            <img src="/cards/order-processed.png" alt="" className="w-full h-full object-contain drop-shadow-md" />
-                        </div>
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in-up">
+                <StatsCard
+                    title="Total Pending"
+                    value={`$${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+                    trend={`${approvedExpenses.length + approvedInvoices.length + approvedRequisitions.length + approvedBudgets.length} items`}
+                    trendUp={totalPending === 0}
+                    icon={PiInvoice}
+                    color="purple"
+                    image="/cards/online-payment (1).png"
+                />
+                <StatsCard
+                    title="Internal Requests"
+                    value={`${approvedExpenses.length + approvedRequisitions.length}`}
+                    trend={`$${(totalExpenses + totalRequisitions).toLocaleString()}`}
+                    trendUp={true}
+                    icon={PiUser}
+                    color="blue"
+                    image="/cards/accounting (1).png"
+                    bgColor="#EEF2FF"
+                />
+                <StatsCard
+                    title="Vendor Invoices"
+                    value={`${approvedInvoices.length}`}
+                    trend={`$${totalInvoices.toLocaleString()}`}
+                    trendUp={true}
+                    icon={PiBuildings}
+                    color="emerald"
+                    image="/cards/pos (2).png"
+                    bgColor="#ECFDF5"
+                />
+                <StatsCard
+                    title="Budget Plans"
+                    value={`${approvedBudgets.length}`}
+                    trend={`$${totalBudgets.toLocaleString()}`}
+                    trendUp={true}
+                    icon={PiFileText}
+                    color="cyan"
+                    image="/cards/order-processed.png"
+                    bgColor="#FFFBEB"
+                />
             </div>
 
             {/* Batch Payment Suggestion */}
