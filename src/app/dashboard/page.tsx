@@ -154,7 +154,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Stats Overview - Purely Expenses */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in-up">
                 <StatsCard
                     title="Total Expenses (MTD)"
                     value={`$${thisMonthTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}

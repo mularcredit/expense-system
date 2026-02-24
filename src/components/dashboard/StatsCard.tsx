@@ -23,19 +23,19 @@ export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "p
             className={cn(
                 "relative rounded-2xl border border-gray-100 overflow-hidden",
                 "hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group",
-                "p-6 pb-5 flex flex-col justify-between",
-                "min-h-[148px]"
+                "p-5 pb-4 flex flex-col justify-between",
+                "min-h-[130px] lg:min-h-[148px]"
             )}
             style={{ backgroundColor: bgColor || '#ffffff' }}
         >
             {/* Top row: title + trend badge */}
-            <div className="flex items-start justify-between">
-                <p className="text-[11px] font-semibold text-gray-600 leading-snug max-w-[60%]">
+            <div className="flex items-start justify-between gap-1 overflow-hidden">
+                <p className="text-[10px] font-bold text-gray-500/80 leading-tight uppercase tracking-wider truncate">
                     {title}
                 </p>
                 {trend && (
                     <span className={cn(
-                        "text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0",
+                        "text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
                         trendColor
                     )}>
                         {trendUp ? "↑" : "↓"} {trend}
@@ -44,19 +44,19 @@ export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "p
             </div>
 
             {/* Bottom row: value left, image right */}
-            <div className="flex items-end justify-between mt-3">
-                <div className="text-[2rem] font-normal text-gray-500 leading-none tracking-tight">
+            <div className="flex items-end justify-between mt-auto gap-2 min-w-0">
+                <div className="text-xl md:text-2xl lg:text-3xl xl:text-2xl 2xl:text-3xl font-normal text-gray-700 leading-none tracking-tight truncate flex-1 min-w-0" title={value}>
                     {value}
                 </div>
 
                 {/* Illustration */}
-                <div className="relative w-[90px] h-[90px] shrink-0 -mb-5 -mr-3 group-hover:scale-105 transition-transform duration-300">
+                <div className="relative w-[60px] h-[60px] lg:w-[80px] lg:h-[80px] xl:w-[90px] xl:h-[90px] shrink-0 -mb-4 -mr-2 group-hover:scale-110 transition-transform duration-300">
                     {image ? (
                         <Image
                             src={image}
                             alt={title}
                             fill
-                            className="object-contain drop-shadow-md"
+                            className="object-contain drop-shadow-sm opacity-90 group-hover:opacity-100 transition-opacity"
                         />
                     ) : (
                         <div className={cn(
@@ -67,7 +67,7 @@ export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "p
                             color === "blue" && "bg-blue-500/10",
                         )}>
                             <Icon className={cn(
-                                "text-4xl",
+                                "text-3xl lg:text-4xl",
                                 color === "purple" && "text-[#29258D]",
                                 color === "cyan" && "text-cyan-500",
                                 color === "emerald" && "text-emerald-500",
