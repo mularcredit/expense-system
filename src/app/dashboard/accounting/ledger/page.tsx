@@ -5,13 +5,12 @@ import { redirect } from "next/navigation";
 import { AccountingActions } from "@/components/accounting/AccountingActions";
 import {
     PiBookOpenText,
-    PiDownloadSimple,
     PiMagnifyingGlass,
-    PiFunnel
 } from "react-icons/pi";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { LedgerExportButton } from "@/components/accounting/LedgerExportButton";
 
 export default async function GeneralLedgerPage({ searchParams }: { searchParams: Promise<{ p?: string, q?: string }> }) {
     const session = await auth();
@@ -70,10 +69,7 @@ export default async function GeneralLedgerPage({ searchParams }: { searchParams
                     </p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="flex items-center gap-2">
-                        <PiDownloadSimple className="text-lg" />
-                        Export to Excel
-                    </Button>
+                    <LedgerExportButton />
                     <AccountingActions type="MANUAL_JOURNAL" />
                 </div>
             </div>

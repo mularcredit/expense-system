@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { RequisitionListWithFilter } from "./RequisitionListWithFilter";
 import { CreateRequisitionButton } from "@/components/requisitions/CreateRequisitionButton";
+import { RequisitionExportButton } from "@/components/requisitions/RequisitionExportButton";
 
 export default async function RequisitionsPage() {
     const session = await auth();
@@ -63,6 +64,11 @@ export default async function RequisitionsPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <RequisitionExportButton
+                        requisitions={JSON.parse(JSON.stringify(requisitions))}
+                        monthlyBudgets={JSON.parse(JSON.stringify(monthlyBudgets))}
+                    />
+
                     <Link
                         href="/dashboard/requisitions/categories"
                         className="px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-md font-medium text-xs hover:bg-gray-50 transition-all flex items-center gap-2 shadow-none"

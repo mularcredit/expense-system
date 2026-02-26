@@ -61,7 +61,7 @@
 
 
 body {
-  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: var(--gds-bg);
   color: var(--gds-text-main);
   background-image: var(--gds-hero-bg);
@@ -193,11 +193,11 @@ body {
 
 /* Utilities */
 .font-heading {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+  font-family: "Avenir Next", "Avenir", "Century Gothic", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
 }
 
 .font-sans {
-  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, sans-serif !important;
+  font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, sans-serif !important;
 }
 
 .font-geist,
@@ -205,10 +205,10 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Ensure Sidebar stays Lexend */
+/* Sidebar uses Avenir Next globally */
 .sidebar-container,
 .sidebar-container * {
-  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 .font-mono {

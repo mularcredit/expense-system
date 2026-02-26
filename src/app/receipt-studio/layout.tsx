@@ -1,16 +1,16 @@
-import { auth } from "@/auth";
-import { requirePermission } from "@/lib/access-control";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Voucher Studio | CapitalPay",
+    description: "Create & issue official disbursement vouchers",
+};
 
 /**
- * Finance Studio layout intentionally resets the global Avenir Next font back
+ * Voucher Studio layout intentionally resets the global Avenir Next font back
  * to the system/Lexend stack. This studio has its own dark-mode design language
  * and should not inherit the Avenir Next global font.
  */
-export default async function FinanceStudioLayout({ children }: { children: React.ReactNode }) {
-    const session = await auth();
-
-    requirePermission(session, ['STUDIO.VIEW', 'FINANCE.VIEW', 'REPORTS.VIEW']);
-
+export default function VoucherStudioLayout({ children }: { children: React.ReactNode }) {
     return (
         <div style={{
             fontFamily: 'var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif',
