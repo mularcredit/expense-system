@@ -274,7 +274,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
                         placeholder="Search menu..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 rounded-lg py-2.5 pl-9 pr-3 text-sm text-white placeholder-white/50 focus:outline-none focus:bg-white/20 focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/30 transition-all font-medium"
+                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 rounded-lg py-2.5 pl-9 pr-3 text-sm text-white placeholder-white/50 focus:outline-none focus:bg-white/20 focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/30 transition-all font-normal"
                     />
                 </div>
             </div>
@@ -309,7 +309,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
                                 }}
                                 className="w-full flex items-center justify-between px-2 py-2 group cursor-pointer hover:bg-white/5 rounded-lg transition-colors"
                             >
-                                <h2 className="text-[11px] font-bold tracking-[0.1em] uppercase text-indigo-300/40 group-hover:text-indigo-300/60 transition-colors">
+                                <h2 className="text-[11px] font-normal tracking-[0.1em] uppercase text-indigo-300/40 group-hover:text-indigo-300/60 transition-colors">
                                     {category.title}
                                 </h2>
                                 <PiCaretDown
@@ -351,7 +351,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
                                                 )}
                                             />
                                             <span className={cn(
-                                                "text-xs font-medium tracking-wide flex-1",
+                                                "text-xs font-normal tracking-wide flex-1",
                                             )}>
                                                 {item.name}
                                             </span>
@@ -383,16 +383,16 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
             <div className="p-6">
                 <div className="p-3 bg-white/5 rounded-2xl flex items-center gap-3 border border-white/10 hover:bg-white/10 transition-colors">
                     <div className="w-10 h-10 rounded-xl bg-indigo-500/20 shadow-sm flex items-center justify-center border border-white/10 overflow-hidden relative group">
-                        <span className="font-heading font-bold text-xs text-indigo-300">
+                        <span className="font-heading font-normal text-xs text-indigo-300">
                             {getInitials(user?.name)}
                         </span>
                         <div className="absolute inset-0 bg-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold truncate text-white">
+                        <p className="text-[13px] font-normal truncate text-white">
                             {user?.name || "User"}
                         </p>
-                        <p className="text-[10px] font-medium text-indigo-300/60 capitalize">
+                        <p className="text-[10px] font-normal text-indigo-300/60 capitalize">
                             {(user as any)?.role?.toLowerCase()?.replace('_', ' ') || "Employee"}
                         </p>
                     </div>

@@ -205,10 +205,10 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Sidebar uses Avenir Next globally */
+/* Sidebar uses Lexend */
 .sidebar-container,
 .sidebar-container * {
-  font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 .font-mono {
