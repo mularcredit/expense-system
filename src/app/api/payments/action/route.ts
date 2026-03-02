@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { paymentId, action, paymentMethod, proofUrl } = body; // action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE'
+        const { paymentId, action, paymentMethod, proofUrl } = body; // action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE' | 'CLOSE'
 
-        if (!['AUTHORIZE', 'REJECT', 'DISBURSE'].includes(action)) {
+        if (!['AUTHORIZE', 'REJECT', 'DISBURSE', 'CLOSE'].includes(action)) {
             return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
         }
 
@@ -40,7 +40,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Payment must be authorized before disbursement' }, { status: 400 });
         }
 
-        if (action !== 'DISBURSE' && payment.status !== 'PENDING_AUTHORIZATION') {
+        if (action === 'CLOSE' && payment.status !== 'PAID') {
+            return NextResponse.json({ error: 'Payment must be disbursed before closing' }, { status: 400 });
+        }
+
+        if ((action === 'AUTHORIZE' || action === 'REJECT') && payment.status !== 'PENDING_AUTHORIZATION') {
             return NextResponse.json({ error: 'Payment is not pending authorization' }, { status: 400 });
         }
 
@@ -72,13 +76,41 @@ export async function POST(req: NextRequest) {
                 p.monthlyBudgets = await (prisma as any).monthlyBudget.findMany({ where: { paymentId } });
             }
 
+            // Wallet deduction logic
+            if (paymentMethod === 'WALLET') {
+                const wallet = await prisma.wallet.findUnique({
+                    where: { userId: session.user.id }
+                });
+
+                if (!wallet || wallet.balance < payment.amount) {
+                    return NextResponse.json({ error: 'Insufficient wallet balance to cover this disbusment.' }, { status: 400 });
+                }
+
+                // Deduct balance and record transaction
+                await prisma.wallet.update({
+                    where: { id: wallet.id },
+                    data: { balance: { decrement: payment.amount } }
+                });
+
+                await prisma.walletTransaction.create({
+                    data: {
+                        walletId: wallet.id,
+                        userId: session.user.id,
+                        type: 'PAYOUT',
+                        amount: -payment.amount,
+                        description: `Disbursement for Payment Batch ${payment.id.slice(-6)}`,
+                        reference: `PAY-${Date.now()}`
+                    }
+                });
+            }
+
             // Mark as PAID
             await prisma.payment.update({
                 where: { id: paymentId },
                 data: {
                     status: 'PAID',
                     processedAt: new Date(),
-                    method: paymentMethod || payment.method || 'BANK_TRANSFER',
+                    method: paymentMethod || payment.method || 'VIRTUAL',
                     notes: proofUrl ? `${payment.notes || ''}\nProof of Payment: ${proofUrl}`.trim() : payment.notes
                 }
             });
@@ -196,6 +228,37 @@ export async function POST(req: NextRequest) {
                 where: { paymentId: paymentId },
                 data: { paymentId: null }
             });
+        } else if (action === 'CLOSE') {
+            await prisma.payment.update({
+                where: { id: paymentId },
+                data: { status: 'CLOSED' }
+            });
+
+            let p = payment as any;
+            if (p.expenses?.length > 0) {
+                await prisma.expense.updateMany({
+                    where: { id: { in: p.expenses.map((e: any) => e.id) } },
+                    data: { status: 'CLOSED' }
+                });
+            }
+            if (p.invoices?.length > 0) {
+                await prisma.invoice.updateMany({
+                    where: { id: { in: p.invoices.map((i: any) => i.id) } },
+                    data: { status: 'CLOSED' }
+                });
+            }
+            if (p.requisitions?.length > 0 || !p.requisitions) { // Fallback query if p.requisitions wasn't fetched fully
+                await (prisma as any).requisition.updateMany({
+                    where: { paymentId: paymentId },
+                    data: { status: 'CLOSED' }
+                });
+            }
+            if (p.monthlyBudgets?.length > 0 || !p.monthlyBudgets) {
+                await (prisma as any).monthlyBudget.updateMany({
+                    where: { paymentId: paymentId },
+                    data: { status: 'CLOSED' }
+                });
+            }
         }
 
         return NextResponse.json({ success: true });

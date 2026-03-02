@@ -5,7 +5,7 @@ export default function AuditPage() {
         <div className="space-y-8 animate-fade-in-up">
             <div className="flex items-end justify-between">
                 <div>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide pl-3 border-l-2 border-[var(--gds-blue-bright)]">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         Complete transaction history & compliance logs
                     </p>
                 </div>

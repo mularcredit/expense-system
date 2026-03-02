@@ -678,7 +678,6 @@ export function ApprovalQueue({ expenses, requisitions, budgets = [], invoices =
                 <Card className="overflow-hidden">
                     <CardHeader className="bg-gray-50 border-b border-gray-100">
                         <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                            <span className="w-1.5 h-4 bg-[#29258D] rounded-full"></span>
                             Approval History
                         </CardTitle>
                     </CardHeader>

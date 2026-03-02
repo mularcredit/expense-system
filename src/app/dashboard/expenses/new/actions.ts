@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { checkEnforceClosure } from "@/lib/closure-check";
 
 const expenseSchema = z.object({
     title: z.string().min(3),
@@ -41,6 +42,13 @@ export async function createExpense(formData: FormData) {
     }
 
     try {
+        const closureCheck = await checkEnforceClosure(session.user.id);
+        if (closureCheck.blocked) {
+            return {
+                message: closureCheck.message,
+            };
+        }
+
         await prisma.expense.create({
             data: {
                 userId: session.user.id,

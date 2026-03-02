@@ -110,10 +110,24 @@ export default async function PaymentsPage() {
         orderBy: { updatedAt: 'desc' }
     });
 
+    // Fetch paid payments (Ready to Close)
+    const paidPayments = await prisma.payment.findMany({
+        where: {
+            status: 'PAID'
+        },
+        include: {
+            maker: { select: { name: true, email: true, profileImage: true } },
+            _count: {
+                select: { invoices: true, expenses: true }
+            }
+        },
+        orderBy: { updatedAt: 'desc' }
+    });
+
     // Fetch payout history
     const payoutHistory = await prisma.payment.findMany({
         where: {
-            status: { in: ['PAID', 'REJECTED'] }
+            status: { in: ['REJECTED', 'CLOSED'] }
         },
         include: {
             maker: { select: { name: true } },
@@ -183,7 +197,7 @@ export default async function PaymentsPage() {
             <div className="flex items-end justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">Payment Center</h1>
-                    <p className="text-gray-400 text-sm font-medium tracking-wide border-l-2 border-[#29258D] pl-3">
+                    <p className="text-gray-400 text-sm font-medium tracking-wide">
                         Process reimbursements, vendor payments and requisitions
                     </p>
                 </div>
@@ -274,6 +288,7 @@ export default async function PaymentsPage() {
                 budgets={JSON.parse(JSON.stringify(approvedBudgets))}
                 pendingPayments={JSON.parse(JSON.stringify(pendingPayments))}
                 authorizedPayments={JSON.parse(JSON.stringify(authorizedPayments))}
+                paidPayments={JSON.parse(JSON.stringify(paidPayments))}
                 history={JSON.parse(JSON.stringify(payoutHistory))}
                 userRole={userRole}
                 stripeStatus={stripeStatus}

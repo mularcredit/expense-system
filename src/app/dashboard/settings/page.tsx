@@ -23,9 +23,17 @@ export default async function SettingsPage() {
 
     if (!user) return redirect("/login");
 
+    const systemSettings = await (prisma as any).systemSetting.findMany();
+    const settingsMap = systemSettings.reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+    }, {});
+
+    const enforceRequestClosure = settingsMap['enforce_request_closure'] === 'true';
+
     return (
         <Suspense fallback={<div>Loading settings...</div>}>
-            <SettingsClient user={user} />
+            <SettingsClient user={user} enforceRequestClosure={enforceRequestClosure} />
         </Suspense>
     );
 }

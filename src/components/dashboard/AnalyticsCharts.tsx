@@ -153,7 +153,6 @@ export function AnalyticsCharts({ categoryData, monthlyData, statusData }: Analy
             <Card className="overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-1.5 h-3 bg-[#29258D] rounded-full"></span>
                         Overview (Revenue vs Expenses)
                     </CardTitle>
                 </CardHeader>
@@ -167,7 +166,6 @@ export function AnalyticsCharts({ categoryData, monthlyData, statusData }: Analy
             <Card className="overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-1.5 h-3 bg-[#29258D] rounded-full"></span>
                         Expense Distribution
                     </CardTitle>
                 </CardHeader>
@@ -195,7 +193,6 @@ export function AnalyticsCharts({ categoryData, monthlyData, statusData }: Analy
             <Card className="overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-1.5 h-3 bg-[#29258D] rounded-full"></span>
                         By Category
                     </CardTitle>
                 </CardHeader>
@@ -209,7 +206,6 @@ export function AnalyticsCharts({ categoryData, monthlyData, statusData }: Analy
             <Card className="overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-1.5 h-3 bg-[#29258D] rounded-full"></span>
                         Approval Status
                     </CardTitle>
                 </CardHeader>

@@ -82,7 +82,7 @@ export default async function ReportsPage() {
             <div className="flex items-end justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-1">Financial Performance</h2>
-                    <p className="text-gray-500 text-sm font-medium tracking-wide border-l-2 border-[var(--gds-emerald)] pl-3">
+                    <p className="text-gray-500 text-sm font-medium tracking-wide">
                         Revenue, Expense & Profit Analysis
                     </p>
                 </div>

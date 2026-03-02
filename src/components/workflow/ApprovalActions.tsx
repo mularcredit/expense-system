@@ -93,10 +93,6 @@ export function ApprovalActions({
                     <Card className="max-w-md w-full overflow-hidden animate-scale-in">
                         <CardHeader className="bg-gray-50 border-b border-gray-100 p-6">
                             <CardTitle className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                <span className={cn(
-                                    "w-1.5 h-4 rounded-full",
-                                    action === 'approve' ? "bg-[#29258D]" : "bg-rose-500"
-                                )}></span>
                                 {action === 'approve' ? 'Approve' : 'Reject'} Request
                             </CardTitle>
                         </CardHeader>

@@ -13,6 +13,8 @@ const RequisitionSchema = z.object({
     description: z.string().min(10, "Justification must be at least 10 characters"),
 });
 
+import { checkEnforceClosure } from "@/lib/closure-check";
+
 import { checkExpensePolicies } from "@/lib/policy-engine";
 import { approvalWorkflow } from "@/lib/approval-workflow";
 
@@ -32,6 +34,11 @@ export async function createRequisition(formData: FormData) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
         };
+    }
+
+    const closureCheck = await checkEnforceClosure(session.user.id);
+    if (closureCheck.blocked) {
+        return { message: closureCheck.message };
     }
 
     const { title, amount, currency, category, description } = validatedFields.data;

@@ -87,7 +87,7 @@ export default function WorkflowAnalyticsPage() {
                     <h1 className="text-4xl font-heading font-bold text-gds-text-main mb-2">
                         Workflow Analytics
                     </h1>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide pl-3 border-l-2 border-[var(--gds-emerald)]">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         Performance insights and approval metrics
                     </p>
                 </div>

@@ -49,7 +49,7 @@ export default async function AccountsPayablePage() {
                 <h1 className="text-4xl font-heading font-bold text-gds-text-main mb-2 tracking-tight">
                     Accounts Payable
                 </h1>
-                <p className="text-gds-text-muted text-sm font-medium tracking-wide border-l-2 border-[#5e48b8] pl-3">
+                <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                     Vendor invoices and payment obligations
                 </p>
             </div>

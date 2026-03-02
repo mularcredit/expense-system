@@ -86,7 +86,7 @@ export default function BudgetsPage() {
             {/* Header */}
             <div className="flex items-end justify-between">
                 <div>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide pl-3 border-l-2 border-[var(--gds-cyan)]">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         Real-time tracking • Intelligent alerts • Overspend prevention
                     </p>
                 </div>
@@ -203,7 +203,6 @@ export default function BudgetsPage() {
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-[#29258D] rounded-full"></div>
                         <div>
                             <CardTitle>Category Budgets</CardTitle>
                             <CardDescription>Allocation vs actual spending comparison</CardDescription>

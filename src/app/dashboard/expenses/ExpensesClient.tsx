@@ -118,7 +118,7 @@ export function ExpensesClient({
         <div className="space-y-8 animate-fade-in-up pb-12 font-sans">
             <div className="flex items-end justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">My Expenses</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-1">My Emergencies</h1>
                     <p className="text-gray-500 text-sm">
                         Track and submit your expenditures
                     </p>
@@ -137,7 +137,7 @@ export function ExpensesClient({
                         className="shadow-lg shadow-indigo-500/20"
                     >
                         <PiPlus className="mr-2 text-lg" />
-                        New Expense
+                        New Emergency
                     </Button>
                 </div>
             </div>
@@ -163,8 +163,8 @@ export function ExpensesClient({
                                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                                         <PiReceipt className="text-xl text-gray-400" />
                                     </div>
-                                    <p className="text-gray-900 font-medium text-sm">No draft expenses</p>
-                                    <p className="text-gray-500 text-xs mt-1">Create a new expense to get started</p>
+                                    <p className="text-gray-900 font-medium text-sm">No draft emergencies</p>
+                                    <p className="text-gray-500 text-xs mt-1">Create a new emergency to get started</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">

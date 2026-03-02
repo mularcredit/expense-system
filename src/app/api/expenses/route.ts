@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { approvalWorkflow } from '@/lib/approval-workflow';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
+import { checkEnforceClosure } from '@/lib/closure-check';
 
 // Base validation schema (for admins - no amount limit)
 const createExpenseSchemaAdmin = z.object({
@@ -59,6 +60,11 @@ export async function POST(request: NextRequest) {
             ? createExpenseSchemaAdmin.parse(body)
             : createExpenseSchemaUser.parse(body);
 
+        const closureCheck = await checkEnforceClosure(session.user.id);
+        if (closureCheck.blocked) {
+            return NextResponse.json({ error: closureCheck.message }, { status: 403 });
+        }
+
         // 1. Create the expense
         const expense = await prisma.expense.create({
             data: {
@@ -74,7 +80,7 @@ export async function POST(request: NextRequest) {
                 requisitionId: validatedData.requisitionId,
                 isReimbursable: validatedData.isReimbursable,
                 isBillable: validatedData.isBillable,
-                status: 'SUBMITTED', // Initial status
+                status: 'APPROVED',
             },
             include: {
                 user: {
@@ -88,31 +94,11 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // 2. Determine approval route using the workflow engine
-        const route = await approvalWorkflow.determineRoute(
-            session.user.id,
-            validatedData.amount,
-            validatedData.category,
-            !!validatedData.receiptUrl
-        );
-
-        // 3. Create approval records automatically
-        const approvals = await approvalWorkflow.createApprovals(expense.id, route);
-
-        console.log(`✅ Expense created: ${expense.id}`);
-        console.log(`✅ Approval route: ${route.autoApprove ? 'Auto-approved' : `${route.levels.length} level(s)`}`);
-        console.log(`✅ Approvals created: ${approvals.length}`);
-
-        // TODO: Send notification emails to approvers
-        // if (!route.autoApprove && approvals.length > 0) {
-        //   await sendApprovalNotifications(expense, approvals);
-        // }
+        console.log(`✅ Emergency created: ${expense.id}`);
 
         return NextResponse.json({
             success: true,
-            message: route.autoApprove
-                ? 'Expense auto-approved!'
-                : 'Expense submitted for approval',
+            message: 'Emergency submitted and sent directly to payments',
             expense: {
                 id: expense.id,
                 title: expense.title,
@@ -121,20 +107,16 @@ export async function POST(request: NextRequest) {
                 createdAt: expense.createdAt
             },
             workflow: {
-                autoApproved: route.autoApprove,
-                reason: route.reason,
-                estimatedDays: route.estimatedDays,
-                approvalLevels: route.levels.length,
-                approvers: route.levels.map(level => ({
-                    level: level.level,
-                    approvers: level.approvers.map(a => a.name),
-                    required: level.required
-                }))
+                autoApproved: true,
+                reason: 'Emergencies bypass approvals',
+                estimatedDays: 0,
+                approvalLevels: 0,
+                approvers: []
             }
         }, { status: 201 });
 
     } catch (error: any) {
-        console.error('Expense creation error:', error);
+        console.error('Emergency creation error:', error);
 
         // Handle validation errors
         if (error instanceof z.ZodError) {
@@ -151,7 +133,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { error: 'Failed to create expense', details: error.message },
+            { error: 'Failed to create emergency', details: error.message },
             { status: 500 }
         );
     }

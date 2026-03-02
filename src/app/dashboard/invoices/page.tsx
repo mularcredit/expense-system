@@ -56,7 +56,7 @@ export default async function InvoicesPage() {
         <div className="space-y-8 animate-fade-in-up">
             <div className="flex items-end justify-between">
                 <div>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide pl-3 border-l-2 border-[var(--gds-emerald)]">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         Manage vendor invoices and accounts payable
                     </p>
                 </div>

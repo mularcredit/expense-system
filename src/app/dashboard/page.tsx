@@ -48,15 +48,15 @@ export default async function DashboardPage() {
     const isSystemAdmin = currentUser?.role === 'SYSTEM_ADMIN';
     const expenseFilter = isPrivileged ? {} : { userId };
 
-    const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const firstDayThisMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
+    const firstDayLastMonth = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000); // 30-60 days ago
+    const lastDayLastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Fetch comprehensive data
     // Execute database queries sequentially to prevent exhausting Neon connection pool limits
     const thisMonthExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayThisMonth } }, orderBy: { createdAt: 'desc' } });
     const lastMonthExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, createdAt: { gte: firstDayLastMonth, lte: lastDayLastMonth } } });
-    const pendingApprovals = await prisma.expense.findMany({ where: { ...expenseFilter, status: 'PENDING_APPROVAL' }, orderBy: { createdAt: 'desc' }, take: 10 });
+    const pendingApprovals = await prisma.expense.findMany({ where: { ...expenseFilter, status: { in: ['PENDING_APPROVAL', 'SUBMITTED'] } }, orderBy: { createdAt: 'desc' }, take: 10 });
     const draftExpenses = await prisma.expense.findMany({ where: { ...expenseFilter, status: 'DRAFT' } });
     const allExpenses = await prisma.expense.findMany({ where: { ...expenseFilter }, orderBy: { expenseDate: 'desc' }, take: 100 });
 
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
             <div className="flex items-end justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">Expense Analytics</h1>
-                    <p className="text-gray-400 text-sm font-medium tracking-wide border-l-2 border-[#29258D] pl-3">
+                    <p className="text-gray-400 text-sm font-medium tracking-wide">
                         {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} • Deep Dive into Spending
                     </p>
                 </div>
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
             {/* Stats Overview - Purely Expenses */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 animate-fade-in-up">
                 <StatsCard
-                    title="Total Expenses (MTD)"
+                    title="Total Expenses (30 Days)"
                     value={`$${thisMonthTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
                     trend={monthOverMonthChange > 0 ? `+${monthOverMonthChange.toFixed(1)}%` : `${monthOverMonthChange.toFixed(1)}%`}
                     trendUp={monthOverMonthChange <= 0}
@@ -206,7 +206,6 @@ export default async function DashboardPage() {
                     {/* Category Allocation */}
                     <Card className="p-8">
                         <h2 className="text-[11px] font-bold tracking-[0.1em]  text-gray-400/80 mb-8 px-2 flex items-center gap-2">
-                            <span className="w-1.5 h-4 bg-[#29258D] rounded-full"></span>
                             Category Allocation
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 px-2">
@@ -237,7 +236,6 @@ export default async function DashboardPage() {
                     {recentLargeExpenses.length > 0 && (
                         <Card className="p-8 border-indigo-500/10">
                             <h2 className="text-[11px] font-bold tracking-[0.1em]  text-gray-400/80 mb-6 px-2 flex items-center gap-2">
-                                <span className="w-1.5 h-4 bg-red-500 rounded-full"></span>
                                 Spending Alerts
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

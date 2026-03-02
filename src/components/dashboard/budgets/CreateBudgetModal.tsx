@@ -53,10 +53,10 @@ export function CreateBudgetModal({ isOpen, onClose, onSuccess }: CreateBudgetMo
                     className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
                 >
                     {/* Header */}
-                    <div className="h-[88px] px-6 bg-white border-b border-gray-100 flex items-center justify-between">
+                    <div className="h-[88px] px-6 bg-gradient-to-r from-green-100 to-white border-b border-gray-100 rounded-t-2xl flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 flex items-center justify-center bg-indigo-50 rounded-full shrink-0">
-                                <Image src="/accounting.png" alt="Budget Icon" width={36} height={36} className="object-contain" />
+                            <div className="flex items-center justify-center shrink-0">
+                                <Image src="/accounting.png" alt="Budget Icon" width={64} height={64} className="object-contain" />
                             </div>
                             <div>
                                 <h2 className="text-base font-bold text-gray-900">New Budget Rule</h2>
@@ -65,7 +65,7 @@ export function CreateBudgetModal({ isOpen, onClose, onSuccess }: CreateBudgetMo
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-white/50 rounded-lg transition-colors"
                         >
                             <PiX className="text-lg" />
                         </button>

@@ -5,7 +5,7 @@ export default function ForecastingPage() {
         <div className="space-y-8 animate-fade-in-up">
             <div className="flex items-end justify-between">
                 <div>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide pl-3 border-l-2 border-[var(--gds-purple)]">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         AI-powered expense predictions & trend analysis
                     </p>
                 </div>

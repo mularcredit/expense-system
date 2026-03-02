@@ -68,9 +68,9 @@ const menuCategories: MenuCategory[] = [
         ]
     },
     {
-        title: "Expense Management",
+        title: "Emergency Management",
         items: [
-            { name: "My expenses", href: "/dashboard/expenses", icon: PiWallet },
+            { name: "My emergencies", href: "/dashboard/expenses", icon: PiWallet },
             { name: "Requisitions", href: "/dashboard/requisitions", icon: PiReceipt },
             { name: "Salaries & Payroll", href: "/dashboard/salaries", icon: PiUsersThree },
             { name: "Approvals", href: "/dashboard/approvals", icon: PiCheckCircle },

@@ -45,25 +45,25 @@ export function Select({ value, onChange, options, placeholder = "Select...", se
             <div
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "w-full px-4 min-h-[42px] py-2 bg-white border border-gray-300 rounded-[5px] flex items-center justify-between cursor-pointer transition-all group select-none text-xs",
-                    isOpen ? 'ring-1 ring-[#29258D]/30 border-indigo-200' : 'hover:border-gray-400',
+                    "w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg flex items-center justify-between cursor-pointer transition-all group select-none",
+                    isOpen ? 'ring-1 ring-[#29258D] border-[#29258D]' : 'hover:border-gray-400',
                     className
                 )}
             >
-                <span className={`font-medium truncate ${selectedOption ? "text-gray-900" : "text-gray-400"}`}>
+                <span className={`font-medium text-sm truncate ${selectedOption ? "text-gray-900" : "text-gray-400"}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
-                <PiCaretDown className={`text-gray-400 text-xs transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#29258D]' : ''}`} />
+                <PiCaretDown className={`text-gray-400 text-sm transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#29258D]' : ''}`} />
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-100 rounded-[5px] z-50 p-2 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl shadow-gray-200/40 z-50 p-2 animate-in fade-in zoom-in-95 duration-100">
                     {searchable && (
                         <div className="relative mb-2 px-1">
-                            <PiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                            <PiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                             <input
                                 autoFocus
-                                className="w-full pl-8 pr-2 py-1.5 bg-gray-50 border-0 rounded-[5px] text-xs focus:ring-1 focus:ring-[#29258D]/30 placeholder:text-gray-400 text-gray-900 focus:outline-none"
+                                className="w-full pl-8 pr-2 py-2 bg-gray-50 border border-gray-100 rounded-md text-sm focus:ring-1 focus:ring-[#29258D]/30 placeholder:text-gray-400 text-gray-900 focus:outline-none"
                                 placeholder="Search..."
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
@@ -82,15 +82,15 @@ export function Select({ value, onChange, options, placeholder = "Select...", se
                                         setIsOpen(false);
                                         setSearch("");
                                     }}
-                                    className={`w-full text-left px-3 py-2 rounded-[5px] text-sm transition-colors flex items-center justify-between group
+                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center justify-between group
                                         ${value === option.value
-                                            ? 'bg-[#29258D]/5 text-[#29258D] font-medium'
-                                            : 'text-gray-700 hover:bg-gray-50'
+                                            ? 'bg-[#29258D]/5 text-[#29258D] font-bold'
+                                            : 'text-gray-700 hover:bg-gray-50 font-medium'
                                         }`}
                                     type="button"
                                 >
                                     <span>{option.label}</span>
-                                    {value === option.value && <PiCheck className="text-[#29258D] text-xs" />}
+                                    {value === option.value && <PiCheck className="text-[#29258D] text-sm" />}
                                 </button>
                             ))
                         ) : (

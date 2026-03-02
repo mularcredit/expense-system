@@ -211,9 +211,9 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 <div className="flex items-center gap-2">
                     <Link href="/dashboard/expenses/new"
                         className="px-3 py-2 rounded-lg border border-transparent transition-all group flex items-center gap-2 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-105 bg-white/50"
-                        title="New Expense">
+                        title="New Emergency">
                         <PiWallet className="text-lg transition-colors text-gray-500 group-hover:text-purple-600" />
-                        <span className="text-xs font-bold transition-colors text-gray-500 group-hover:text-purple-600 hidden lg:inline">Expense</span>
+                        <span className="text-xs font-bold transition-colors text-gray-500 group-hover:text-purple-600 hidden lg:inline">Emergency</span>
                     </Link>
 
                     <GlobalNewRequisitionButton />

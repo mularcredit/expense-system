@@ -10,7 +10,6 @@ export function TransactionTable({ expenses }: { expenses: any[] }) {
             <Card className="min-h-[400px]">
                 <CardHeader>
                     <div className="flex items-center gap-3">
-                        <div className="w-1 h-6 bg-[#29258D] rounded-full"></div>
                         <CardTitle>Recent Activity</CardTitle>
                     </div>
                 </CardHeader>
@@ -26,7 +25,6 @@ export function TransactionTable({ expenses }: { expenses: any[] }) {
             <CardHeader>
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        <div className="w-1 h-6 bg-[#29258D] rounded-full"></div>
                         <div>
                             <CardTitle>Recent Activity</CardTitle>
                             <CardDescription>Latest processed transactions</CardDescription>

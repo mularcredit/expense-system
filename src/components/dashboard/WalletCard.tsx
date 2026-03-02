@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import { UnifiedExpenseModal } from "@/components/expenses/UnifiedExpenseModal";
+import { Select } from "@/components/ui/Select";
 
 interface WalletCardProps {
     balance: number;
@@ -226,22 +227,22 @@ function AllocateModal({ onClose, branches, categories }: { onClose: () => void,
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     className="relative bg-white border border-gray-200 w-full max-w-xl rounded-xl overflow-hidden max-h-[90vh] flex flex-col"
                 >
-                    <div className="h-[88px] px-8 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+                    <div className="h-[88px] px-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-green-100 to-white shrink-0">
                         <div className="flex items-center gap-4">
-                            <div className="shrink-0 w-12 h-12">
-                                <img src="/cards/atm-card.png" alt="Allocate Funds" className="w-full h-full object-contain drop-shadow-sm" />
+                            <div className="shrink-0 w-16 h-16">
+                                <img src="/cards/atm-card.png" alt="Allocate Funds" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <h3 className="text-base font-semibold text-gray-900">Allocate Funds</h3>
                                 <p className="text-gray-500 text-xs mt-1 font-medium">Distribute corporate funds to branches</p>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-2.5 rounded-full hover:bg-gray-50 text-gray-400 hover:text-gray-900 transition-all">
+                        <button onClick={onClose} className="p-2.5 rounded-xl hover:bg-white/50 text-gray-500 hover:text-gray-900 transition-all">
                             <PiX className="text-xl" />
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto bg-[#f8f9fa] p-8 space-y-6">
+                    <div className="flex-1 overflow-y-auto bg-white p-8 space-y-6">
                         {error && (
                             <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 text-xs font-bold flex items-center gap-3">
                                 <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
@@ -249,61 +250,60 @@ function AllocateModal({ onClose, branches, categories }: { onClose: () => void,
                             </div>
                         )}
 
-                        <div className="space-y-3">
-                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Target Branch *</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                {branches.map(branch => (
-                                    <button
-                                        key={branch}
-                                        type="button"
-                                        onClick={() => setSelectedBranch(branch)}
-                                        className={`p-4 rounded-xl border text-left text-xs font-bold transition-all duration-200 ${selectedBranch === branch
-                                            ? 'bg-[#29258D] text-white border-[#29258D]'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:border-[#29258D]/30 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        {branch}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="space-y-1">
+                            <label className="block text-xs font-medium text-gray-700 mb-1.5">Target Branch <span className="text-rose-500">*</span></label>
+                            <Select
+                                value={selectedBranch}
+                                onChange={(val) => setSelectedBranch(val)}
+                                options={branches.map(branch => ({ value: branch, label: branch }))}
+                                placeholder="Select target branch"
+                                searchable={true}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Category *</label>
-                                <select
+                            <div className="space-y-1">
+                                <label className="block text-xs font-medium text-gray-700 mb-1.5">Category <span className="text-rose-500">*</span></label>
+                                <Select
                                     value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="w-full bg-white border border-gray-200 rounded-lg py-3 px-4 text-xs text-gray-900 font-semibold focus:outline-none focus:ring-1 focus:ring-[#29258D] transition-all appearance-none cursor-pointer"
-                                >
-                                    <option value="" disabled>Select category</option>
-                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                </select>
+                                    onChange={(val) => setSelectedCategory(val)}
+                                    options={categories.map(cat => ({ value: cat, label: cat }))}
+                                    placeholder="Select category"
+                                    searchable={true}
+                                />
                             </div>
-                            <div className="space-y-3">
-                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Amount *</label>
+                            <div className="space-y-1">
+                                <label className="block text-xs font-medium text-gray-700 mb-1.5">Amount <span className="text-rose-500">*</span></label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
-                                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-8 pr-4 text-sm font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#29258D] transition-all"
+                                        className="w-full bg-white border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#29258D] transition-all font-mono"
                                         placeholder="0.00"
+                                        name="allocateAmtNew"
+                                        id="allocateAmtNew"
+                                        autoComplete="off"
+                                        data-form-type="other"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Context (Optional)</label>
+                        <div className="space-y-1">
+                            <label className="block text-xs font-medium text-gray-700 mb-1.5">Context & Reasoning (Optional)</label>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={2}
-                                className="w-full bg-white border border-gray-200 rounded-lg p-4 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#29258D] transition-all resize-none font-medium"
+                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#29258D] transition-all shadow-none resize-none placeholder:text-gray-300 min-h-[80px]"
                                 placeholder="Allocation reasoning..."
+                                name="allocateDescNew"
+                                id="allocateDescNew"
+                                autoComplete="off"
+                                data-form-type="other"
                             />
                         </div>
                     </div>
@@ -311,14 +311,14 @@ function AllocateModal({ onClose, branches, categories }: { onClose: () => void,
                     <div className="h-[88px] px-8 bg-white border-t border-gray-100 flex items-center justify-end gap-3">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2.5 rounded-md text-xs font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+                            className="px-4 py-2.5 rounded-md text-xs font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-none"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleAllocate}
                             disabled={isSubmitting || !selectedBranch || !amount || !selectedCategory}
-                            className="px-6 py-2.5 rounded-md text-xs font-bold text-white bg-[#29258D] hover:bg-[#29258D]/90 transition-all flex items-center gap-2 disabled:opacity-50"
+                            className="px-6 py-2.5 rounded-md text-xs font-bold text-white bg-[#29258D] hover:bg-[#29258D]/90 transition-all flex items-center gap-2 disabled:opacity-50 shadow-none"
                         >
                             {isSubmitting ? "Processing..." : (
                                 <>

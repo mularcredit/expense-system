@@ -28,9 +28,10 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 
 interface SettingsClientProps {
     user: Pick<User, "id" | "name" | "email" | "role" | "department" | "position" | "phoneNumber">;
+    enforceRequestClosure?: boolean;
 }
 
-export function SettingsClient({ user }: SettingsClientProps) {
+export function SettingsClient({ user, enforceRequestClosure = false }: SettingsClientProps) {
     const { showToast } = useToast();
     const router = useRouter();
     const pathname = usePathname();
@@ -54,7 +55,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
             pushNotifications: true,
             marketing: false,
             securityAlerts: true
-        }
+        },
+        enforceRequestClosure: enforceRequestClosure
     });
 
     const handleInputChange = (field: string, value: any) => {
@@ -81,6 +83,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
             if (isAdmin) {
                 data.append('companyName', formData.companyName);
                 data.append('headquartersAddress', formData.headquartersAddress);
+                data.append('enforceRequestClosure', String(formData.enforceRequestClosure));
             }
 
             const result = await updateSettings(data);
@@ -111,7 +114,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                     <h1 className="text-4xl font-heading font-bold text-gds-text-main mb-2 tracking-tight">
                         {isAdmin ? 'System Configuration' : 'Account Settings'}
                     </h1>
-                    <p className="text-gds-text-muted text-sm font-medium tracking-wide border-l-2 border-[#5e48b8] pl-3">
+                    <p className="text-gds-text-muted text-sm font-medium tracking-wide">
                         {isAdmin ? 'Manage organization profile and global preferences' : 'Manage your personal profile and security'}
                     </p>
                 </div>
@@ -287,6 +290,23 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                             onChange={(e) => handleInputChange('headquartersAddress', e.target.value)}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-900 outline-none focus:border-[#5e48b8] transition-all resize-none"
                                         />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2 pt-4 border-t border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <label className="text-[12px] font-bold text-gray-900">Enforce Request Closure</label>
+                                                <p className="text-xs text-gray-500">Prevent users from submitting new expenses or requisitions if they have active unclosed requests.</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleInputChange('enforceRequestClosure', !formData.enforceRequestClosure)}
+                                                className="text-2xl transition-all hover:scale-110 active:scale-90"
+                                            >
+                                                {formData.enforceRequestClosure ?
+                                                    <PiToggleRight className="text-[#5e48b8] text-4xl" /> :
+                                                    <PiToggleLeft className="text-gray-300 text-4xl" />
+                                                }
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </motion.div>

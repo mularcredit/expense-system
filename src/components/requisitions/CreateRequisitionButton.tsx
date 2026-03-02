@@ -11,9 +11,9 @@ interface CreateRequisitionButtonProps {
 export function CreateRequisitionButton({ requisitions }: CreateRequisitionButtonProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Filter eligible requisitions (PENDING, APPROVED, or PAID)
+    // Filter eligible requisitions (PENDING, APPROVED, PAID, or CLOSED)
     const eligibleRequisitions = requisitions.filter(r =>
-        ['PENDING', 'APPROVED', 'PAID'].includes(r.status)
+        ['PENDING', 'APPROVED', 'PAID', 'CLOSED'].includes(r.status)
     );
 
     return (

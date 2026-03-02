@@ -9,9 +9,9 @@ const SettingsSchema = z.object({
     name: z.string().min(1, "Name is required"),
     phoneNumber: z.string().optional(),
     language: z.string().optional(),
-    // Organization fields (optional, only for admins)
     companyName: z.string().optional(),
     headquartersAddress: z.string().optional(),
+    enforceRequestClosure: z.string().optional(),
 });
 
 export async function updateSettings(formData: FormData) {
@@ -23,9 +23,9 @@ export async function updateSettings(formData: FormData) {
     const rawData = {
         name: formData.get("name"),
         phoneNumber: formData.get("phoneNumber"),
-        language: formData.get("language"),
         companyName: formData.get("companyName"),
         headquartersAddress: formData.get("headquartersAddress"),
+        enforceRequestClosure: formData.get("enforceRequestClosure"),
     };
 
     try {
@@ -41,9 +41,14 @@ export async function updateSettings(formData: FormData) {
             }
         });
 
-        // If Admin, Update Organization (Mock implementation as there's no single Org table yet usually)
-        // For now, we'll just log it or update if there's an organization model.
-        // Assuming we might save these to a 'SystemSettings' table or similar in future.
+        // If Admin, Update Organization
+        if (data.enforceRequestClosure !== undefined) {
+            await (prisma as any).systemSetting.upsert({
+                where: { key: 'enforce_request_closure' },
+                update: { value: data.enforceRequestClosure },
+                create: { key: 'enforce_request_closure', value: data.enforceRequestClosure },
+            });
+        }
 
         revalidatePath("/dashboard/settings");
         return { success: true };

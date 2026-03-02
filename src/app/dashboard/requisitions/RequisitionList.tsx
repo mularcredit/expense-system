@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BiX, BiReceipt } from "react-icons/bi";
-import { PiCaretRight, PiCheckCircle, PiUploadSimple, PiBuilding, PiTag, PiCalendar, PiCurrencyDollar, PiFileText, PiPlus } from "react-icons/pi";
-import { fulfillRequisition } from "./actions";
+import { PiCaretRight, PiCheckCircle, PiUploadSimple, PiBuilding, PiTag, PiCalendar, PiCurrencyDollar, PiFileText, PiPlus, PiPencil, PiWarning } from "react-icons/pi";
+import { fulfillRequisition, updateRequisition } from "./actions";
 import { useToast } from "@/components/ui/ToastProvider";
 import { DeleteEntityButton } from "@/components/dashboard/DeleteEntityButton";
 import { AddItemModal } from "@/components/requisitions/AddItemModal";
@@ -44,6 +44,48 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [addingItemTo, setAddingItemTo] = useState<any>(null);
+
+    // Edit state
+    const [editingReq, setEditingReq] = useState<any>(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editBranch, setEditBranch] = useState("");
+    const [editDepartment, setEditDepartment] = useState("");
+    const [editExpectedDate, setEditExpectedDate] = useState("");
+    const [editSaving, setEditSaving] = useState(false);
+    const [editError, setEditError] = useState("");
+
+    const openEdit = (req: any) => {
+        setEditingReq(req);
+        setEditTitle(req.title || "");
+        setEditDescription(req.description || "");
+        setEditBranch(req.branch || "");
+        setEditDepartment(req.department || "");
+        setEditExpectedDate(req.expectedDate ? new Date(req.expectedDate).toISOString().split('T')[0] : "");
+        setEditError("");
+    };
+
+    const handleEditSave = async () => {
+        if (!editingReq) return;
+        setEditSaving(true);
+        setEditError("");
+        const fd = new FormData();
+        fd.append("id", editingReq.id);
+        fd.append("title", editTitle);
+        fd.append("description", editDescription);
+        fd.append("branch", editBranch);
+        fd.append("department", editDepartment);
+        if (editExpectedDate) fd.append("expectedDate", editExpectedDate);
+        const result = await updateRequisition(fd);
+        setEditSaving(false);
+        if (result.success) {
+            showToast("Requisition updated successfully", "success");
+            setEditingReq(null);
+            router.refresh();
+        } else {
+            setEditError(result.message || "Failed to save");
+        }
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -111,16 +153,16 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
 
     return (
         <>
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="pl-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID</th>
-                            <th className="py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Item / Purpose</th>
-                            <th className="py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                            <th className="py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Amount</th>
-                            <th className="py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                            <th className="pr-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest">Action</th>
+                            <th className="pl-6 py-4 w-24 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">ID</th>
+                            <th className="py-4 min-w-[300px] text-[10px] font-bold text-gray-400 uppercase tracking-widest">Item / Purpose</th>
+                            <th className="py-4 w-28 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Date</th>
+                            <th className="py-4 w-32 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Amount</th>
+                            <th className="py-4 w-28 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Status</th>
+                            <th className="pr-6 py-4 w-[280px] text-right text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -132,63 +174,77 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                             </tr>
                         ) : (
                             allItems.map((req: any, i: number) => (
-                                <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="pl-6 py-4 font-mono text-[10px] text-gray-400">
+                                <tr key={i} className="hover:bg-gray-50/50 transition-colors group">
+                                    <td className="pl-6 py-5 font-mono text-[10px] text-gray-400 align-top">
                                         {req.id.slice(0, 8).toUpperCase()}
                                     </td>
-                                    <td className="py-4">
-                                        <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-gray-900">{req.title}</span>
+                                    <td className="py-5 align-top">
+                                        <div className="flex flex-col gap-1.5 pr-4">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-sm font-semibold text-gray-900 leading-snug break-words">
+                                                    {req.title}
+                                                </span>
                                                 {req.listType === 'MONTHLY' && (
-                                                    <span className="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">PLAN</span>
+                                                    <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded shrink-0 leading-none mt-0.5 uppercase">Plan</span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-2 text-[10px] text-gray-500 uppercase tracking-tight">
-                                                {req.branch || "Global"} {req.department && `• ${req.department}`}
+                                            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                                                <PiBuilding />
+                                                <span>{req.branch || "Global"} {req.department && `• ${req.department}`}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-4 text-xs text-gray-500">
+                                    <td className="py-5 text-xs text-gray-500 align-top whitespace-nowrap">
                                         {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                     </td>
-                                    <td className="py-4 text-sm font-mono font-medium text-gray-900">
+                                    <td className="py-5 text-sm font-mono font-medium text-gray-900 align-top whitespace-nowrap">
                                         ${req.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </td>
-                                    <td className="py-4">
+                                    <td className="py-5 align-top whitespace-nowrap">
                                         <span className={getStatusStyles(req.status)}>
                                             {req.status}
                                         </span>
                                     </td>
-                                    <td className="pr-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="pr-6 py-4 align-top">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            {req.listType === 'STANDARD' && ['PENDING', 'NEEDS_INFO'].includes(req.status) && (
+                                                <button
+                                                    onClick={() => openEdit(req)}
+                                                    className="p-1.5 rounded hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition-all opacity-0 group-hover:opacity-100"
+                                                    title="Edit Requisition"
+                                                >
+                                                    <PiPencil className="text-[15px]" />
+                                                </button>
+                                            )}
+
                                             {req.listType === 'STANDARD' && (req.status === 'PENDING' || req.status === 'APPROVED') && (
                                                 <button
                                                     onClick={() => setAddingItemTo(req)}
-                                                    className="text-[10px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded hover:bg-gray-200 transition-all uppercase tracking-widest flex items-center gap-1.5"
-                                                    title="Add another item to this requisition"
+                                                    className="text-xs font-medium text-gray-700 bg-white border border-gray-200 px-2.5 py-1.5 rounded-md hover:bg-gray-50 transition-all flex items-center gap-1.5 whitespace-nowrap"
+                                                    title="Add Item"
                                                 >
                                                     <PiPlus className="text-sm" />
-                                                    Add Item
+                                                    Add item
                                                 </button>
                                             )}
 
                                             {req.listType === 'STANDARD' && req.status === 'APPROVED' ? (
                                                 <button
                                                     onClick={() => setSelectedReq(req)}
-                                                    className="text-[10px] font-bold text-[#29258D] bg-[#29258D]/5 border border-[#29258D]/10 px-3 py-1.5 rounded hover:bg-[#29258D] hover:text-white transition-all uppercase tracking-widest"
+                                                    className="text-xs font-medium text-[#29258D] bg-[#29258D]/5 border border-[#29258D]/20 px-2.5 py-1.5 rounded-md hover:bg-[#29258D] hover:text-white transition-all flex items-center gap-1.5 whitespace-nowrap"
                                                 >
-                                                    Submit Receipt
+                                                    <PiUploadSimple className="text-sm" />
+                                                    Submit receipt
                                                 </button>
                                             ) : null}
 
                                             {req.listType === 'STANDARD' && (req.status === 'APPROVED' || req.status === 'PAID' || req.status === 'FULFILLED') ? (
                                                 <Link
                                                     href={`/receipt-studio?requisitionId=${req.id}`}
-                                                    className="text-[10px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-3 py-1.5 rounded hover:bg-gray-200 transition-all uppercase tracking-widest flex items-center gap-1.5"
+                                                    className="text-xs font-medium text-gray-700 bg-white border border-gray-200 px-2.5 py-1.5 rounded-md hover:bg-gray-50 transition-all flex items-center gap-1.5 whitespace-nowrap"
                                                 >
                                                     <BiReceipt className="text-sm" />
-                                                    Generate Voucher
+                                                    Voucher
                                                 </Link>
                                             ) : null}
 
@@ -197,29 +253,31 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                                                     href={req.receiptUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded hover:bg-emerald-100 transition-all uppercase tracking-widest flex items-center gap-1.5"
+                                                    className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 transition-all flex items-center gap-1.5 whitespace-nowrap"
                                                 >
                                                     <BiReceipt className="text-sm" />
-                                                    View Receipt
+                                                    Receipt
                                                 </a>
                                             ) : null}
 
-                                            <button
-                                                onClick={() => setViewingReq(req)}
-                                                className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all"
-                                                title="View Details"
-                                            >
-                                                <PiCaretRight className="text-base" />
-                                            </button>
+                                            <div className="flex items-center gap-0.5 ml-1 border-l border-gray-100 pl-1">
+                                                <button
+                                                    onClick={() => setViewingReq(req)}
+                                                    className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all"
+                                                    title="View Details"
+                                                >
+                                                    <PiCaretRight className="text-[15px]" />
+                                                </button>
 
-                                            {req.listType === 'STANDARD' && req.status !== 'FULFILLED' && (
-                                                <DeleteEntityButton
-                                                    id={req.id}
-                                                    entityType="requisition"
-                                                    entityName={req.title}
-                                                    className="p-1.5"
-                                                />
-                                            )}
+                                                {req.listType === 'STANDARD' && req.status !== 'FULFILLED' && (
+                                                    <DeleteEntityButton
+                                                        id={req.id}
+                                                        entityType="requisition"
+                                                        entityName={req.title}
+                                                        className="p-1.5 !text-gray-400 hover:!text-rose-500 hover:!bg-rose-50"
+                                                    />
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -503,6 +561,118 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                         router.refresh();
                     }}
                 />
+            )}
+
+            {/* Edit Requisition Modal */}
+            {editingReq && mounted && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
+                    <div className="bg-white max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col">
+                        {/* Header */}
+                        <div className="h-[80px] shrink-0 flex items-center justify-between px-6 bg-gradient-to-r from-[#29258D] to-[#3d39c4] text-white">
+                            <div>
+                                <h2 className="text-sm font-bold">Edit Requisition</h2>
+                                <p className="text-[10px] text-white/60 font-mono mt-0.5">#{editingReq.id.slice(0, 8).toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => setEditingReq(null)} className="p-2 rounded-full hover:bg-white/10 transition-colors">
+                                <BiX className="text-2xl" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4 overflow-y-auto bg-[#f8f9fa]">
+                            {editError && (
+                                <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs font-medium">
+                                    <PiWarning className="text-base shrink-0" />
+                                    {editError}
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Title <span className="text-rose-500">*</span></label>
+                                <input
+                                    type="text"
+                                    value={editTitle}
+                                    onChange={e => setEditTitle(e.target.value)}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/20 focus:border-[#29258D] transition-all"
+                                    placeholder="Requisition title"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Justification <span className="text-rose-500">*</span></label>
+                                <textarea
+                                    value={editDescription}
+                                    onChange={e => setEditDescription(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/20 focus:border-[#29258D] transition-all resize-none"
+                                    placeholder="Explain the business need..."
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Branch</label>
+                                    <input
+                                        type="text"
+                                        value={editBranch}
+                                        onChange={e => setEditBranch(e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/20 focus:border-[#29258D] transition-all"
+                                        placeholder="e.g. Nairobi"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Department</label>
+                                    <input
+                                        type="text"
+                                        value={editDepartment}
+                                        onChange={e => setEditDepartment(e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/20 focus:border-[#29258D] transition-all"
+                                        placeholder="e.g. Finance"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Expected Date</label>
+                                <input
+                                    type="date"
+                                    value={editExpectedDate}
+                                    onChange={e => setEditExpectedDate(e.target.value)}
+                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/20 focus:border-[#29258D] transition-all"
+                                />
+                            </div>
+
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <PiWarning className="text-amber-500 text-base mt-0.5 shrink-0" />
+                                <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                                    Only <strong>PENDING</strong> requisitions can be edited. Once approved, contact an admin to make changes.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="h-[72px] shrink-0 flex items-center justify-end gap-3 px-6 bg-white border-t border-gray-100">
+                            <button
+                                onClick={() => setEditingReq(null)}
+                                className="px-5 py-2.5 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleEditSave}
+                                disabled={editSaving}
+                                className="px-6 py-2.5 text-xs font-bold text-white bg-[#29258D] rounded-xl hover:bg-[#29258D]/90 transition-all flex items-center gap-2 disabled:opacity-60"
+                            >
+                                {editSaving ? (
+                                    <><div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving...</>
+                                ) : (
+                                    <><PiCheckCircle className="text-sm" /> Save Changes</>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
             )}
         </>
     );

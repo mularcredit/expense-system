@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { checkEnforceClosure } from "@/lib/closure-check";
 import { checkExpensePolicies } from "@/lib/policy-engine";
 import { approvalWorkflow } from "@/lib/approval-workflow";
 
@@ -41,6 +42,11 @@ export async function createRequisitionWithItems(formData: FormData) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
         };
+    }
+
+    const closureCheck = await checkEnforceClosure(session.user.id);
+    if (closureCheck.blocked) {
+        return { message: closureCheck.message };
     }
 
     const { title, description, currency, items: validatedItems } = validatedFields.data;
@@ -88,10 +94,18 @@ export async function createRequisitionWithItems(formData: FormData) {
     const department = formData.get("department") as string;
     const vendor = formData.get("vendor") as string;
     const expectedDateStr = formData.get("expectedDate") as string;
+    const paymentMethod = formData.get("paymentMethod") as string;
+    const paymentReference = formData.get("paymentReference") as string;
 
     let finalDescription = description;
     if (vendor && vendor.trim()) {
         finalDescription += `\n\n**Preferred Vendor:** ${vendor.trim()}`;
+    }
+    if (paymentMethod && paymentMethod.trim()) {
+        finalDescription += `\n\n**Payment Method:** ${paymentMethod.trim()}`;
+        if (paymentReference && paymentReference.trim()) {
+            finalDescription += ` — Ref/Number: ${paymentReference.trim()}`;
+        }
     }
 
     const expectedDate = expectedDateStr ? new Date(expectedDateStr) : undefined;
@@ -261,7 +275,7 @@ export async function getEligibleRequisitions() {
         // Fetch PENDING or APPROVED requisitions
         // Admins can see all, users see their own
         const whereClause: any = {
-            status: { in: ['PENDING', 'APPROVED', 'PAID'] }
+            status: { in: ['PENDING', 'APPROVED', 'PAID', 'CLOSED'] }
         };
 
         if (!isAdmin) {
@@ -307,3 +321,18 @@ export async function getCategoriesAction() {
         return EXPENSE_CATEGORIES;
     }
 }
+
+export async function getVendorsAction() {
+    try {
+        const vendors = await prisma.vendor.findMany({
+            where: { isActive: true },
+            select: { id: true, name: true, bankName: true, bankAccount: true, email: true, phone: true },
+            orderBy: { name: "asc" },
+        });
+        return vendors;
+    } catch (error) {
+        console.error("Error fetching vendors:", error);
+        return [];
+    }
+}
+

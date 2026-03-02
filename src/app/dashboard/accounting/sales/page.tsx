@@ -102,7 +102,7 @@ export default async function SalesPage({ searchParams }: { searchParams: Promis
             <div className="flex items-end justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-1">Sales & Income</h2>
-                    <p className="text-gray-500 text-xs font-medium tracking-wide border-l-2 border-[var(--gds-emerald)] pl-3">
+                    <p className="text-gray-500 text-xs font-medium tracking-wide">
                         Manage invoices, track revenue, and monitor collection.
                     </p>
                 </div>

@@ -50,7 +50,7 @@ export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "p
                 </div>
 
                 {/* Illustration */}
-                <div className="relative w-[60px] h-[60px] lg:w-[80px] lg:h-[80px] xl:w-[90px] xl:h-[90px] shrink-0 -mb-4 -mr-2 group-hover:scale-110 transition-transform duration-300">
+                <div className="relative w-[40px] h-[40px] lg:w-[48px] lg:h-[48px] xl:w-[56px] xl:h-[56px] shrink-0 -mb-1 group-hover:scale-110 transition-transform duration-300">
                     {image ? (
                         <Image
                             src={image}
@@ -60,14 +60,14 @@ export function StatsCard({ title, value, trend, trendUp, icon: Icon, color = "p
                         />
                     ) : (
                         <div className={cn(
-                            "w-full h-full flex items-center justify-center rounded-2xl",
+                            "w-full h-full flex items-center justify-center rounded-xl lg:rounded-2xl",
                             color === "purple" && "bg-[#29258D]/10",
                             color === "cyan" && "bg-cyan-500/10",
                             color === "emerald" && "bg-emerald-500/10",
                             color === "blue" && "bg-blue-500/10",
                         )}>
                             <Icon className={cn(
-                                "text-3xl lg:text-4xl",
+                                "text-xl lg:text-2xl xl:text-3xl",
                                 color === "purple" && "text-[#29258D]",
                                 color === "cyan" && "text-cyan-500",
                                 color === "emerald" && "text-emerald-500",

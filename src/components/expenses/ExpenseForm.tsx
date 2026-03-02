@@ -146,10 +146,10 @@ export function ExpenseForm({ mode, onSuccess, onCancel }: ExpenseFormProps) {
         <div className="w-full font-sans">
             <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-300 flex flex-col shadow-sm">
 
-                {/* 1. HEADER: Pure White */}
-                <div className="bg-white px-6 h-[88px] flex items-center gap-4 border-b border-gray-100 rounded-t-xl">
-                    <div className="w-14 h-14 flex items-center justify-center bg-indigo-50 rounded-full shrink-0">
-                        <img src="/online-payment.png" alt="Expense Icon" className="w-9 h-9 object-contain" />
+                {/* 1. HEADER: Gradient */}
+                <div className="h-[88px] px-6 flex items-center gap-4 bg-gradient-to-r from-green-100 to-white border-b border-gray-100 rounded-t-xl">
+                    <div className="flex items-center justify-center shrink-0">
+                        <img src="/online-payment.png" alt="Expense Icon" className="w-16 h-16 object-contain" />
                     </div>
                     <div>
                         <h1 className="text-base font-semibold text-gray-900">
@@ -161,8 +161,8 @@ export function ExpenseForm({ mode, onSuccess, onCancel }: ExpenseFormProps) {
                     </div>
                 </div>
 
-                {/* 2. BODY: Gradient Background with Sections */}
-                <div className="bg-gradient-to-b from-gray-50/50 to-[#f5f5ff]/80 p-6 lg:p-8 space-y-8">
+                {/* 2. BODY: White Background with Sections */}
+                <div className="bg-white p-6 lg:p-8 space-y-8">
 
                     {/* Section 1: Transaction Details */}
                     <div>
@@ -469,8 +469,8 @@ export function ExpenseForm({ mode, onSuccess, onCancel }: ExpenseFormProps) {
                     </div>
                 </div>
 
-                {/* 3. FOOTER: Gradient Background */}
-                <div className="h-[88px] px-6 bg-gradient-to-b from-[#f5f5ff]/80 to-[#f0f0ff] border-t border-gray-200 flex items-center justify-end gap-3 rounded-b-xl">
+                {/* 3. FOOTER */}
+                <div className="h-[88px] px-6 bg-white border-t border-gray-200 flex items-center justify-end gap-3 rounded-b-xl">
                     {onCancel && (
                         <button
                             type="button"

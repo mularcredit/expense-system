@@ -114,14 +114,14 @@ export default function MonthlyBudgetPage() {
         <div className="max-w-6xl mx-auto pb-24 font-sans">
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col relative">
                 {/* Header */}
-                <div className="h-[88px] px-6 flex items-center justify-between bg-white border-b border-gray-100 rounded-t-xl">
+                <div className="h-[88px] px-6 flex items-center justify-between bg-gradient-to-r from-green-100 to-white border-b border-gray-100 rounded-t-xl">
                     <div className="flex items-center gap-4">
-                        <Link href="/dashboard/requisitions" className="p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-gray-900 transition-all">
+                        <Link href="/dashboard/requisitions" className="p-2 rounded-lg hover:bg-white/50 text-gray-400 hover:text-gray-900 transition-all">
                             <PiCaretLeft className="text-xl" />
                         </Link>
                         <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 flex items-center justify-center bg-indigo-50 rounded-full shrink-0">
-                                <Image src="/accounting.png" alt="Budget Icon" width={36} height={36} className="object-contain" />
+                            <div className="flex items-center justify-center shrink-0">
+                                <Image src="/accounting.png" alt="Budget Icon" width={64} height={64} className="object-contain" />
                             </div>
                             <div>
                                 <h1 className="text-base font-semibold text-gray-900">{periodType === "MONTHLY" ? "Monthly" : "Weekly"} Budget Plan</h1>
@@ -134,7 +134,7 @@ export default function MonthlyBudgetPage() {
                 </div>
 
                 {/* Body */}
-                <div className="bg-gradient-to-b from-gray-50/50 to-[#f5f5ff]/40 p-6 lg:p-10">
+                <div className="bg-white p-6 lg:p-10">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column: Context & Details */}
                         <div className="lg:col-span-1 space-y-6">

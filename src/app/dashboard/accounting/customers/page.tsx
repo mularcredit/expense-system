@@ -46,7 +46,7 @@ export default async function CustomersPage() {
             <div className="flex items-end justify-between">
                 <div>
                     <h1 className="text-3xl font-heading font-bold text-[#0f172a] mb-1">Customer Portal</h1>
-                    <p className="text-gray-500 text-sm font-medium tracking-tight border-l-2 border-[#5e48b8] pl-3">
+                    <p className="text-gray-500 text-sm font-medium tracking-tight">
                         Manage client relationships, receivables, and automated statements
                     </p>
                 </div>

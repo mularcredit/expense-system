@@ -23,7 +23,9 @@ import {
     PiLightbulb,
     PiCaretLeft,
     PiCaretRight,
-    PiFunnel
+    PiFunnel,
+    PiGlobe,
+    PiWallet
 } from "react-icons/pi";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -103,6 +105,7 @@ interface PaymentQueueProps {
     budgets?: Budget[];
     pendingPayments: PaymentBatch[];
     authorizedPayments?: PaymentBatch[];
+    paidPayments?: PaymentBatch[];
     history: any[];
     userRole: string;
     stripeStatus?: string;
@@ -115,6 +118,7 @@ export function PaymentQueue({
     budgets = [],
     pendingPayments = [],
     authorizedPayments = [],
+    paidPayments = [],
     history = [],
     userRole,
     stripeStatus = 'NOT_CONNECTED'
@@ -125,18 +129,19 @@ export function PaymentQueue({
     const getDefaultTab = () => {
         if (authorizedPayments.length > 0 && ['FINANCE_TEAM', 'FINANCE_APPROVER', 'SYSTEM_ADMIN'].includes(userRole)) return 'disbursements';
         if (pendingPayments.length > 0 && ['FINANCE_APPROVER', 'MANAGER'].includes(userRole)) return 'approvals';
+        if (paidPayments.length > 0 && ['FINANCE_TEAM', 'FINANCE_APPROVER', 'SYSTEM_ADMIN'].includes(userRole)) return 'closing';
         if ((expenses.length > 0 || invoices.length > 0 || requisitions.length > 0 || budgets.length > 0)) return 'payables';
         return 'history';
     }
 
-    const [activeTab, setActiveTab] = useState<'payables' | 'approvals' | 'disbursements' | 'history'>(getDefaultTab());
+    const [activeTab, setActiveTab] = useState<'payables' | 'approvals' | 'disbursements' | 'closing' | 'history'>(getDefaultTab());
     const [selectedExpenses, setSelectedExpenses] = useState<Set<string>>(new Set());
     const [selectedInvoices, setSelectedInvoices] = useState<Set<string>>(new Set());
     const [selectedRequisitions, setSelectedRequisitions] = useState<Set<string>>(new Set());
     const [selectedBudgets, setSelectedBudgets] = useState<Set<string>>(new Set());
     const [isProcessing, setIsProcessing] = useState(false);
     const [showHelp, setShowHelp] = useState(true);
-    const [paymentMethod, setPaymentMethod] = useState<'BANK_TRANSFER' | 'MOBILE_MONEY' | 'CASH'>('BANK_TRANSFER');
+    const [paymentMethod, setPaymentMethod] = useState<'VIRTUAL' | 'WALLET'>('VIRTUAL');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -145,8 +150,8 @@ export function PaymentQueue({
     const [confirmationModal, setConfirmationModal] = useState<{
         isOpen: boolean;
         paymentId: string;
-        action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE';
-        paymentMethod?: 'BANK_TRANSFER' | 'MOBILE_MONEY' | 'CASH';
+        action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE' | 'CLOSE';
+        paymentMethod?: 'VIRTUAL' | 'WALLET';
     } | null>(null);
 
     // Pagination State
@@ -231,7 +236,7 @@ export function PaymentQueue({
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    const handleAuthorization = (paymentId: string, action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE') => {
+    const handleAuthorization = (paymentId: string, action: 'AUTHORIZE' | 'REJECT' | 'DISBURSE' | 'CLOSE') => {
         setConfirmationModal({ isOpen: true, paymentId, action, paymentMethod: paymentMethod });
         setSelectedFile(null); // Reset file selection
     };
@@ -265,7 +270,7 @@ export function PaymentQueue({
                 body: JSON.stringify({
                     paymentId,
                     action,
-                    paymentMethod: confirmationModal.paymentMethod || 'BANK_TRANSFER',
+                    paymentMethod: confirmationModal.paymentMethod || 'VIRTUAL',
                     proofUrl: noteAttachment ? noteAttachment.replace(' [Proof: ', '').replace(']', '') : undefined
                 })
             });
@@ -280,7 +285,9 @@ export function PaymentQueue({
                 ? 'Payment Authorized & ready for payout'
                 : action === 'DISBURSE'
                     ? 'Payment disbursed successfully'
-                    : 'Payment Rejected';
+                    : action === 'CLOSE'
+                        ? 'Payment closed successfully'
+                        : 'Payment Rejected';
 
             showToast(successMessage, 'success');
             setConfirmationModal(null);
@@ -288,6 +295,8 @@ export function PaymentQueue({
 
             if (action === 'AUTHORIZE') {
                 setActiveTab('disbursements');
+            } else if (action === 'DISBURSE') {
+                setActiveTab('closing');
             }
         } catch (error: any) {
             showToast(error.message, 'error');
@@ -348,26 +357,27 @@ export function PaymentQueue({
             <div className="flex flex-col lg:flex-row gap-8 items-start">
 
                 {/* ── VERTICAL STEPPER SIDEBAR ── */}
-                <div className="w-full lg:w-[260px] xl:w-[280px] shrink-0 bg-[#0f1023] rounded-3xl p-6 lg:p-8 sticky top-6 shadow-2xl border border-white/5 bg-[url('/assets/grain.png')]">
+                <div className="w-full lg:w-[260px] xl:w-[280px] shrink-0 bg-white rounded-3xl p-6 lg:p-8 sticky top-6 shadow-xl border border-gray-100">
 
                     {/* Header text inside stepper */}
                     <div className="mb-6 lg:mb-10 pl-2">
-                        <h3 className="text-white font-bold text-base lg:text-lg">Payment Process</h3>
-                        <p className="text-white/40 text-[10px] lg:text-xs mt-1">Follow the steps to complete payouts.</p>
+                        <h3 className="text-gray-900 font-bold text-base lg:text-lg">Payment Process</h3>
+                        <p className="text-gray-500 text-[10px] lg:text-xs mt-1">Follow the steps to complete payouts.</p>
                     </div>
 
                     <div className="relative space-y-0">
                         {/* Vertical Line */}
-                        <div className="absolute left-[22px] top-4 bottom-10 w-[2px] bg-white/10 z-0"></div>
+                        <div className="absolute left-[22px] top-4 bottom-10 w-[2px] bg-gray-100 z-0"></div>
 
                         {[
                             { id: 'payables', label: 'Select Payables', sub: 'Browse and select', icon: PiCheckCircle },
                             { id: 'approvals', label: 'Approvals', sub: 'Authorize batches', icon: PiCheckCircle },
                             { id: 'disbursements', label: 'Disbursement', sub: 'Ready to pay', icon: PiCheckCircle },
+                            { id: 'closing', label: 'Closing', sub: 'Finalize records', icon: PiCheckCircle },
                             { id: 'history', label: 'History', sub: 'Past transactions', icon: PiCheckCircle }
                         ].map((step, idx) => {
                             const isActive = activeTab === step.id;
-                            const isPast = ['payables', 'approvals', 'disbursements', 'history'].indexOf(activeTab) > idx;
+                            const isPast = ['payables', 'approvals', 'disbursements', 'closing', 'history'].indexOf(activeTab) > idx;
 
                             return (
                                 <button
@@ -377,12 +387,12 @@ export function PaymentQueue({
                                 >
                                     {/* Icon Circle */}
                                     <div className={cn(
-                                        "w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center shrink-0 border-2 transition-all duration-300",
+                                        "w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center shrink-0 border transition-all duration-300",
                                         isActive
-                                            ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-110"
+                                            ? "bg-emerald-500 border-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)] scale-110"
                                             : isPast
-                                                ? "bg-[#1a1c35] border-emerald-500/50 text-emerald-500"
-                                                : "bg-[#1a1c35] border-white/10 text-gray-500 group-hover:border-white/30"
+                                                ? "bg-emerald-50 border-emerald-500/50 text-emerald-500"
+                                                : "bg-white border-gray-200 text-gray-400 group-hover:border-gray-300"
                                     )}>
                                         <step.icon className={cn("text-xl", isActive && "animate-pulse")} />
                                     </div>
@@ -391,11 +401,11 @@ export function PaymentQueue({
                                     <div className={cn("transition-all duration-300", isActive ? "translate-x-1" : "")}>
                                         <p className={cn(
                                             "font-bold text-sm",
-                                            isActive ? "text-white" : "text-white/60 group-hover:text-white/90"
+                                            isActive ? "text-gray-900" : "text-gray-500 group-hover:text-gray-700"
                                         )}>
                                             {step.label}
                                         </p>
-                                        <p className="text-[10px] text-white/30 font-medium mt-0.5">
+                                        <p className="text-[10px] text-gray-400 font-medium mt-0.5">
                                             {step.sub}
                                         </p>
                                     </div>
@@ -419,7 +429,7 @@ export function PaymentQueue({
                         <div className="space-y-4 animate-fade-in">
                             {/* Selection Summary */}
                             {(selectedExpenses.size > 0 || selectedInvoices.size > 0 || selectedRequisitions.size > 0 || selectedBudgets.size > 0) && (
-                                <div className="p-2 pl-3 pr-2 bg-[#0f1023] text-white rounded-xl shadow-2xl shadow-black/20 border border-white/10 flex items-center justify-between sticky top-6 z-30 mb-8 mx-auto max-w-2xl backdrop-blur-xl">
+                                <div className="p-2 pl-3 pr-2 bg-[#1B185D] text-white rounded-xl shadow-2xl shadow-black/20 border border-white/10 flex items-center justify-between sticky top-6 z-30 mb-8 mx-auto max-w-2xl backdrop-blur-xl">
                                     <div className="flex items-center gap-4 pl-4">
                                         <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                                             <PiCheckCircle className="text-xl text-emerald-500" />
@@ -475,11 +485,53 @@ export function PaymentQueue({
                                     </div>
                                 ) : (
                                     <>
+                                        {/* Select All Action */}
+                                        <div className="flex items-center justify-between px-2 mb-2">
+                                            <h3 className="text-sm font-bold text-gray-900">Available Payables</h3>
+                                            <button
+                                                onClick={() => {
+                                                    const totalItems = expenses.length + invoices.length + requisitions.length + budgets.length;
+                                                    const totalSelected = selectedExpenses.size + selectedInvoices.size + selectedRequisitions.size + selectedBudgets.size;
+                                                    const isAllSelected = totalItems > 0 && totalItems === totalSelected;
+
+                                                    if (isAllSelected) {
+                                                        setSelectedExpenses(new Set());
+                                                        setSelectedInvoices(new Set());
+                                                        setSelectedRequisitions(new Set());
+                                                        setSelectedBudgets(new Set());
+                                                    } else {
+                                                        setSelectedExpenses(new Set(expenses.map(e => e.id)));
+                                                        setSelectedInvoices(new Set(invoices.map(i => i.id)));
+                                                        setSelectedRequisitions(new Set(requisitions.map(r => r.id)));
+                                                        setSelectedBudgets(new Set(budgets.map(b => b.id)));
+                                                    }
+                                                }}
+                                                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg flex items-center gap-2"
+                                            >
+                                                {(() => {
+                                                    const totalItems = expenses.length + invoices.length + requisitions.length + budgets.length;
+                                                    const totalSelected = selectedExpenses.size + selectedInvoices.size + selectedRequisitions.size + selectedBudgets.size;
+                                                    const isAllSelected = totalItems > 0 && totalItems === totalSelected;
+                                                    return (
+                                                        <>
+                                                            <div className={cn(
+                                                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                                                isAllSelected ? "bg-indigo-600 border-indigo-600 text-white" : "border-indigo-300"
+                                                            )}>
+                                                                {isAllSelected && <PiCheckCircle className="text-[10px]" />}
+                                                            </div>
+                                                            {isAllSelected ? 'Deselect All' : 'Select All Items'}
+                                                        </>
+                                                    );
+                                                })()}
+                                            </button>
+                                        </div>
+
                                         {/* Requisitions Section */}
                                         {requisitions.length > 0 && (
                                             <div className="space-y-3">
                                                 <div className="flex items-center gap-2 px-1">
-                                                    <PiFileText className="text-gray-400" />
+                                                    <img src="/debit-card.png" alt="" className="w-4 h-4 object-contain opacity-50 grayscale" />
                                                     <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Purchase Requisitions ({requisitions.length})</h3>
                                                 </div>
                                                 {requisitions.map(req => (
@@ -499,11 +551,16 @@ export function PaymentQueue({
                                                         )}>
                                                             {selectedRequisitions.has(req.id) && <PiCheckCircle className="text-sm" />}
                                                         </div>
-                                                        <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                                            <PiFileText className="text-xl text-amber-600" />
+                                                        <div className={cn(
+                                                            "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 p-2.5 transition-all",
+                                                            selectedRequisitions.has(req.id)
+                                                                ? "bg-white shadow-[0_2px_10px_rgba(0,0,0,0.06)] scale-105"
+                                                                : "bg-gradient-to-br from-orange-50 to-rose-50 border border-orange-100/50 shadow-inner"
+                                                        )}>
+                                                            <img src="/debit-card.png" alt="Requisition" className="w-full h-full object-contain filter drop-shadow-sm" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-gray-900 truncate">{req.title}</p>
+                                                            <p className="text-sm font-normal text-gray-900 truncate">{req.title}</p>
                                                             <p className="text-xs text-gray-500 font-medium">{req.user.name} • {req.category}</p>
                                                         </div>
                                                         <div className="text-right flex-shrink-0">
@@ -542,7 +599,7 @@ export function PaymentQueue({
                                                             <PiHandCoins className="text-xl text-indigo-600" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-gray-900 truncate">Budget: {bud.month}/{bud.year}</p>
+                                                            <p className="text-sm font-normal text-gray-900 truncate">Budget: {bud.month}/{bud.year}</p>
                                                             <p className="text-xs text-gray-500 font-medium">{bud.branch} • {bud.department}</p>
                                                         </div>
                                                         <div className="text-right flex-shrink-0">
@@ -581,7 +638,7 @@ export function PaymentQueue({
                                                             <PiBuildings className="text-xl text-purple-600" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-gray-900 truncate">{invoice.vendor.name}</p>
+                                                            <p className="text-sm font-normal text-gray-900 truncate">{invoice.vendor.name}</p>
                                                             <p className="text-xs text-gray-500 font-medium">Inv: {invoice.invoiceNumber} • Due: {formatDate(invoice.dueDate)}</p>
                                                         </div>
                                                         <div className="text-right flex-shrink-0">
@@ -620,7 +677,7 @@ export function PaymentQueue({
                                                             <PiUser className="text-xl text-blue-600" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-bold text-gray-900 truncate">{expense.title}</p>
+                                                            <p className="text-sm font-normal text-gray-900 truncate">{expense.title}</p>
                                                             <p className="text-xs text-gray-500 font-medium">{expense.user.name} • {formatDate(expense.updatedAt)}</p>
                                                         </div>
                                                         <div className="text-right flex-shrink-0">
@@ -796,6 +853,70 @@ export function PaymentQueue({
                         </div>
                     )}
 
+                    {/* TAB: CLOSING */}
+                    {activeTab === 'closing' && (
+                        <div className="animate-fade-in">
+                            {paidPayments.length === 0 ? (
+                                <div className="p-12 text-center bg-gray-50 rounded-2xl border border-gray-200">
+                                    <PiCheckCircle className="text-5xl text-emerald-500 mx-auto mb-4" />
+                                    <p className="font-bold text-gray-900 mb-1">No Payments Pending Closure</p>
+                                    <p className="text-sm text-gray-500">All disbursed payments have been closed.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                    {paidPayments.map(batch => (
+                                        <div key={batch.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col">
+                                            {/* Header */}
+                                            <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="flex items-center justify-center">
+                                                        <img src="/pos-terminal (2).png" alt="POS" className="w-10 h-10 object-contain" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-sm font-semibold text-gray-900">Paid Batch</h3>
+                                                        <p className="text-xs text-gray-500">{batch.maker.name}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-medium">
+                                                    Paid
+                                                </span>
+                                            </div>
+
+                                            {/* Body */}
+                                            <div className="px-4 py-4 flex-1">
+                                                <div className="mb-3">
+                                                    <p className="text-2xl font-heading font-bold text-gray-900">
+                                                        ${batch.amount.toFixed(2)}
+                                                    </p>
+                                                </div>
+
+                                                <div className="space-y-1.5">
+                                                    <p className="text-xs text-gray-500 flex flex-wrap gap-x-2">
+                                                        <span className="font-medium text-gray-700">{batch._count?.invoices || 0}</span> invoices,
+                                                        <span className="font-medium text-gray-700">{batch._count?.expenses || 0}</span> expenses
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{formatDate(batch.createdAt)}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Footer */}
+                                            <div className="px-4 py-3 border-t border-gray-200 mt-auto">
+                                                <button
+                                                    onClick={() => handleAuthorization(batch.id, 'CLOSE')}
+                                                    disabled={isProcessing}
+                                                    className="w-full py-2.5 rounded-md text-xs font-bold text-white bg-gray-900 hover:bg-black shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                                >
+                                                    <PiCheckCircle className="text-sm" />
+                                                    Close Workflow
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* TAB: HISTORY */}
                     {activeTab === 'history' && (
                         <div className="animate-fade-in space-y-4">
@@ -917,25 +1038,31 @@ export function PaymentQueue({
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4",
                                 confirmationModal.action === 'AUTHORIZE' ? "bg-cyan-50" :
-                                    confirmationModal.action === 'DISBURSE' ? "bg-indigo-50" : "bg-rose-50"
+                                    confirmationModal.action === 'DISBURSE' ? "bg-indigo-50" :
+                                        confirmationModal.action === 'CLOSE' ? "bg-emerald-50" : "bg-rose-50"
                             )}>
                                 {confirmationModal.action === 'AUTHORIZE' ? (
                                     <PiCheckCircle className="text-3xl text-cyan-500" />
                                 ) : confirmationModal.action === 'DISBURSE' ? (
                                     <PiHandCoins className="text-3xl text-indigo-500" />
+                                ) : confirmationModal.action === 'CLOSE' ? (
+                                    <PiCheckCircle className="text-3xl text-emerald-500" />
                                 ) : (
                                     <PiWarningCircle className="text-3xl text-rose-500" />
                                 )}
                             </div>
                             <h3 className="text-lg font-bold text-gray-900 mb-2">
                                 {confirmationModal.action === 'AUTHORIZE' ? 'Approve Payment?' :
-                                    confirmationModal.action === 'DISBURSE' ? 'Disburse Payment?' : 'Reject Payment?'}
+                                    confirmationModal.action === 'DISBURSE' ? 'Disburse Payment?' :
+                                        confirmationModal.action === 'CLOSE' ? 'Close Payment Lifecycle?' : 'Reject Payment?'}
                             </h3>
                             <p className="text-sm text-gray-500 mb-6">
-                                Are you sure you want to {
-                                    confirmationModal.action === 'DISBURSE' ? 'confirm the payout for' : confirmationModal.action.toLowerCase()
-                                } this payment batch?
-                                {(confirmationModal.action === 'AUTHORIZE' || confirmationModal.action === 'DISBURSE') && " This action cannot be undone."}
+                                {confirmationModal.action === 'CLOSE' ?
+                                    "Are you sure you want to close this payment batch? This means the payment has fulfilled its lifecycle and all valid proof was provided." :
+                                    `Are you sure you want to ${confirmationModal.action === 'DISBURSE' ? 'confirm the payout for' : confirmationModal.action.toLowerCase()
+                                    } this payment batch?`
+                                }
+                                {(confirmationModal.action === 'AUTHORIZE' || confirmationModal.action === 'DISBURSE' || confirmationModal.action === 'CLOSE') && " This action cannot be undone."}
                             </p>
 
 
@@ -945,15 +1072,73 @@ export function PaymentQueue({
                                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">
                                             Payment Method *
                                         </label>
-                                        <select
-                                            value={paymentMethod}
-                                            onChange={(e) => setPaymentMethod(e.target.value as 'BANK_TRANSFER' | 'MOBILE_MONEY' | 'CASH')}
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                                        >
-                                            <option value="BANK_TRANSFER">Bank Transfer</option>
-                                            <option value="MOBILE_MONEY">Mobile Money</option>
-                                            <option value="CASH">Cash</option>
-                                        </select>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod('VIRTUAL')}
+                                                className={cn(
+                                                    "relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden",
+                                                    paymentMethod === 'VIRTUAL'
+                                                        ? "border-indigo-600 bg-indigo-50/30 text-indigo-700 shadow-[0_4px_14px_rgba(79,70,229,0.12)]"
+                                                        : "border-gray-100 bg-white text-gray-400 hover:border-gray-200 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                {/* Fancy background blob when active */}
+                                                {paymentMethod === 'VIRTUAL' && (
+                                                    <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-full bg-indigo-100/50 -z-0" />
+                                                )}
+
+                                                {/* Check indicator */}
+                                                <div className={cn(
+                                                    "absolute top-3 right-3 w-4 h-4 rounded-full flex items-center justify-center transition-colors z-10",
+                                                    paymentMethod === 'VIRTUAL' ? "bg-indigo-600 border border-indigo-600" : "border-2 border-gray-200"
+                                                )}>
+                                                    {paymentMethod === 'VIRTUAL' && <PiCheckCircle className="text-white text-[10px]" />}
+                                                </div>
+
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center mb-1 transition-colors z-10",
+                                                    paymentMethod === 'VIRTUAL' ? "bg-indigo-100 text-indigo-600" : "bg-gray-100 text-gray-400"
+                                                )}>
+                                                    <PiGlobe className="text-xl" />
+                                                </div>
+                                                <span className="text-sm font-bold z-10">Virtual Pay</span>
+                                                <span className="text-[10px] text-gray-400 font-medium -mt-1 z-10">Mark as processed</span>
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod('WALLET')}
+                                                className={cn(
+                                                    "relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden",
+                                                    paymentMethod === 'WALLET'
+                                                        ? "border-emerald-500 bg-emerald-50/30 text-emerald-700 shadow-[0_4px_14px_rgba(16,185,129,0.12)]"
+                                                        : "border-gray-100 bg-white text-gray-400 hover:border-gray-200 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                {/* Fancy background blob when active */}
+                                                {paymentMethod === 'WALLET' && (
+                                                    <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-full bg-emerald-100/50 -z-0" />
+                                                )}
+
+                                                {/* Check indicator */}
+                                                <div className={cn(
+                                                    "absolute top-3 right-3 w-4 h-4 rounded-full flex items-center justify-center transition-colors z-10",
+                                                    paymentMethod === 'WALLET' ? "bg-emerald-500 border border-emerald-500" : "border-2 border-gray-200"
+                                                )}>
+                                                    {paymentMethod === 'WALLET' && <PiCheckCircle className="text-white text-[10px]" />}
+                                                </div>
+
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center mb-1 transition-colors z-10",
+                                                    paymentMethod === 'WALLET' ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400"
+                                                )}>
+                                                    <PiWallet className="text-xl" />
+                                                </div>
+                                                <span className="text-sm font-bold z-10">Capital Wallet</span>
+                                                <span className="text-[10px] text-gray-400 font-medium -mt-1 z-10">Deduct from balance</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="mb-6 text-left">
@@ -984,7 +1169,8 @@ export function PaymentQueue({
                                     className={cn(
                                         "py-2.5 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2",
                                         confirmationModal.action === 'AUTHORIZE' ? "bg-cyan-500 hover:bg-cyan-600" :
-                                            confirmationModal.action === 'DISBURSE' ? "bg-indigo-600 hover:bg-indigo-700" : "bg-rose-500 hover:bg-rose-600"
+                                            confirmationModal.action === 'DISBURSE' ? "bg-indigo-600 hover:bg-indigo-700" :
+                                                confirmationModal.action === 'CLOSE' ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"
                                     )}
                                 >
                                     {isProcessing ? (
@@ -992,7 +1178,8 @@ export function PaymentQueue({
                                     ) : (
                                         <>
                                             {confirmationModal.action === 'AUTHORIZE' ? 'Approve' :
-                                                confirmationModal.action === 'DISBURSE' ? 'Confirm Payout' : 'Reject'}
+                                                confirmationModal.action === 'DISBURSE' ? 'Confirm Payout' :
+                                                    confirmationModal.action === 'CLOSE' ? 'Close Payment' : 'Reject'}
                                         </>
                                     )}
                                 </button>

@@ -39,7 +39,6 @@ export function OverviewChart({ data, className }: { data: any[], className?: st
         <Card className={cn("w-full h-[350px] p-8 pr-4", className)}>
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400/80 flex items-center gap-2">
-                    <span className="w-1.5 h-4 bg-[var(--gds-primary)] rounded-full"></span>
                     Spend Analytics
                 </h2>
                 <div className="flex items-center gap-2 px-3 py-1 bg-[var(--gds-surface-bright)] border border-[var(--gds-border)] rounded-lg text-[10px] font-bold text-[var(--gds-text-muted)]">

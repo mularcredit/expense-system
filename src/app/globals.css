@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --font-sans: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, sans-serif;
   --font-lexend: var(--font-lexend);
   --font-geist: var(--font-geist-sans);
 }
@@ -191,21 +192,24 @@ body {
   border-bottom: 0;
 }
 
-/* Utilities */
-.font-heading {
-  font-family: "Avenir Next", "Avenir", "Century Gothic", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+
+
+/* Typography Defaults */
+* {
+  font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
 }
 
+.font-heading,
 .font-sans {
   font-family: "Avenir Next", "Avenir", "Century Gothic", var(--font-lexend), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif, system-ui, sans-serif !important;
 }
 
 .font-geist,
 .dash-main {
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
 }
 
-/* Sidebar uses Lexend */
+/* Sidebar overrides universal rule */
 .sidebar-container,
 .sidebar-container * {
   font-family: var(--font-lexend), -apple-system, BlinkMacSystemFont, sans-serif !important;
