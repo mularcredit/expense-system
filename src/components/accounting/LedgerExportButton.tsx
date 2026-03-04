@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -9,6 +9,8 @@ import {
     PiSpinner, PiX, PiFunnel, PiCheckSquare, PiSquare
 } from "react-icons/pi";
 import { useToast } from "@/components/ui/ToastProvider";
+import { Select } from "@/components/ui/Select";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const ALL_STATUSES = ["POSTED", "DRAFT", "VOID"];
 
@@ -16,12 +18,25 @@ export function LedgerExportButton() {
     const { showToast } = useToast();
     const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState<"pdf" | "csv" | null>(null);
+    const [accounts, setAccounts] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (modalOpen && accounts.length === 0) {
+            fetch("/api/accounting/accounts")
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setAccounts(data);
+                })
+                .catch(err => console.error("Failed to fetch accounts:", err));
+        }
+    }, [modalOpen, accounts.length]);
 
     // ── Filters ──────────────────────────────────────────────────────────────
     const [selStatuses, setSelStatuses] = useState<string[]>([...ALL_STATUSES]);
+    const [accountId, setAccountId] = useState<string>("");
     const [searchQ, setSearchQ] = useState("");
-    const [dateFrom, setDateFrom] = useState("");
-    const [dateTo, setDateTo] = useState("");
+    const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+    const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
 
     // ── Helpers ──────────────────────────────────────────────────────────────
     const toggle = (arr: string[], setArr: (v: string[]) => void, val: string) =>
@@ -30,13 +45,15 @@ export function LedgerExportButton() {
     const resetFilters = () => {
         setSelStatuses([...ALL_STATUSES]);
         setSearchQ("");
-        setDateFrom("");
-        setDateTo("");
+        setAccountId("");
+        setDateFrom(undefined);
+        setDateTo(undefined);
     };
 
     const activeFilterCount = [
         selStatuses.length < ALL_STATUSES.length,
         !!searchQ,
+        !!accountId,
         !!dateFrom,
         !!dateTo,
     ].filter(Boolean).length;
@@ -45,6 +62,7 @@ export function LedgerExportButton() {
     const fetchEntries = async (): Promise<any[]> => {
         const params = new URLSearchParams();
         if (searchQ) params.set("q", searchQ);
+        if (accountId) params.set("accountId", accountId);
         const res = await fetch(`/api/reports/ledger?${params.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch ledger data");
         let entries: any[] = await res.json();
@@ -68,7 +86,15 @@ export function LedgerExportButton() {
         const parts: string[] = [];
         if (selStatuses.length < ALL_STATUSES.length) parts.push(selStatuses.join("+"));
         if (searchQ) parts.push(`"${searchQ}"`);
-        if (dateFrom || dateTo) parts.push(`${dateFrom || "start"}–${dateTo || "end"}`);
+        if (accountId) {
+            const acc = accounts.find(a => a.id === accountId);
+            if (acc) parts.push(`Acc: ${acc.code}`);
+        }
+        if (dateFrom || dateTo) {
+            const df = dateFrom ? new Date(dateFrom).toLocaleDateString() : "start";
+            const dt = dateTo ? new Date(dateTo).toLocaleDateString() : "end";
+            parts.push(`${df}–${dt}`);
+        }
         return parts.length ? parts.join(", ") : "All entries";
     };
 
@@ -202,7 +228,7 @@ export function LedgerExportButton() {
             {/* ── Filter Modal ── */}
             {modalOpen && typeof window !== "undefined" && createPortal(
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-scale-in">
+                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-visible animate-scale-in">
 
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
@@ -221,17 +247,35 @@ export function LedgerExportButton() {
                         <div className="px-6 py-5 space-y-5">
 
                             {/* Search */}
-                            <div>
-                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                                    Search (Reference / Description)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={searchQ}
-                                    onChange={e => setSearchQ(e.target.value)}
-                                    placeholder="e.g. INV-001, salaries, vendor name..."
-                                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#29258D]/30"
-                                />
+                            <div className="grid grid-cols-2 gap-3 z-50">
+                                <div className="z-50 border-gray-200">
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                        Account
+                                    </label>
+                                    <Select
+                                        options={[
+                                            { value: "", label: "All Accounts" },
+                                            ...accounts.map(a => ({ value: a.id, label: `${a.code} - ${a.name}` }))
+                                        ]}
+                                        value={accountId}
+                                        onChange={setAccountId}
+                                        searchable={true}
+                                        placeholder="All Accounts"
+                                        className="[&>div]:text-xs [&>div]:py-2.5"
+                                    />
+                                </div>
+                                <div className="z-40">
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                        Search (Keyword)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={searchQ}
+                                        onChange={e => setSearchQ(e.target.value)}
+                                        placeholder="Ref, Description..."
+                                        className="w-full h-[42px] px-3 py-2 border border-gray-200 bg-white rounded-lg text-xs font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#29258D]/30"
+                                    />
+                                </div>
                             </div>
 
                             {/* Status toggles */}
@@ -256,17 +300,19 @@ export function LedgerExportButton() {
                             {/* Date range */}
                             <div>
                                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Date Range (Entry Date)</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <span className="text-[10px] text-gray-400 font-medium block mb-1">From</span>
-                                        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#29258D]/30" />
-                                    </div>
-                                    <div>
-                                        <span className="text-[10px] text-gray-400 font-medium block mb-1">To</span>
-                                        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#29258D]/30" />
-                                    </div>
+                                <div className="grid grid-cols-2 gap-3 z-30 relative">
+                                    <DatePicker
+                                        value={dateFrom}
+                                        onChange={setDateFrom}
+                                        placeholder="Start Date"
+                                        className="[&>div]:text-xs"
+                                    />
+                                    <DatePicker
+                                        value={dateTo}
+                                        onChange={setDateTo}
+                                        placeholder="End Date"
+                                        className="[&>div]:text-xs"
+                                    />
                                 </div>
                             </div>
 
@@ -284,7 +330,7 @@ export function LedgerExportButton() {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3 rounded-b-2xl">
                             <p className="text-[11px] text-gray-400 font-medium">
                                 Exports will include <span className="font-bold text-gray-700">all matching entries</span> across all pages
                             </p>

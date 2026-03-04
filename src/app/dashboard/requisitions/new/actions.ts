@@ -87,7 +87,13 @@ export async function createRequisition(formData: FormData) {
 
     const expectedDate = expectedDateStr ? new Date(expectedDateStr) : undefined;
 
-    const requisition = await (prisma.requisition.create as any)({
+    // Fetch user to check if they have a branchId (e.g., Team Leader)
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { branchId: true }
+    });
+
+    const requisition = await prisma.requisition.create({
         data: {
             userId: session.user.id,
             title,
@@ -98,7 +104,8 @@ export async function createRequisition(formData: FormData) {
             businessJustification: finalDescription,
             status: "PENDING",
             type,
-            branch,
+            branchId: user?.branchId || null, // Auto-link to user's branch
+            branch, // Legacy string field
             department,
             expectedDate
         },

@@ -15,17 +15,34 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("q") || "";
+    const accountId = searchParams.get("accountId") || "";
+
+    const whereClause: any = { AND: [] };
+
+    if (search) {
+        whereClause.AND.push({
+            OR: [
+                { description: { contains: search, mode: "insensitive" } },
+                { reference: { contains: search, mode: "insensitive" } },
+                { lines: { some: { account: { name: { contains: search, mode: "insensitive" } } } } },
+                { lines: { some: { account: { code: { contains: search, mode: "insensitive" } } } } },
+            ]
+        });
+    }
+
+    if (accountId) {
+        whereClause.AND.push({
+            lines: { some: { accountId } }
+        });
+    }
+
+    if (whereClause.AND.length === 0) {
+        delete whereClause.AND;
+    }
 
     try {
         const entries = await (prisma as any).journalEntry.findMany({
-            where: search
-                ? {
-                    OR: [
-                        { description: { contains: search, mode: "insensitive" } },
-                        { reference: { contains: search, mode: "insensitive" } },
-                    ],
-                }
-                : {},
+            where: whereClause,
             orderBy: { date: "desc" },
             include: {
                 lines: {

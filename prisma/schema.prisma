@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -29,6 +28,8 @@ model User {
   resetTokenExpiry      DateTime?
   stripeAccountId       String?
   stripeConnectStatus   String?
+  branchId              String?             // Team Leaders: references Branch.id
+  regionId              String?             // Regional Managers: references Region.id
   approvals             Approval[]
   assets                Asset[]
   expenses              Expense[]
@@ -48,10 +49,12 @@ model User {
   subordinates          User[]              @relation("ManagerSubordinates")
   wallet                Wallet?
   walletTransactions    WalletTransaction[]
+  leadBranch            Branch?             // back-ref: Branch.teamLeaderId → User.id
 
   @@index([email])
   @@index([managerId])
   @@index([stripeAccountId])
+  @@index([regionId])
 }
 
 model Notification {
@@ -187,7 +190,8 @@ model Requisition {
   businessJustification String
   expectedDate          DateTime?
   type                  String            @default("STANDARD")
-  branch                String?
+  branch                String?           // legacy plain text
+  branchId              String?           // FK to Branch model
   department            String?
   status                String            @default("PENDING")
   createdAt             DateTime          @default(now())
@@ -199,10 +203,12 @@ model Requisition {
   journalEntries        JournalEntry[]
   payment               Payment?          @relation(fields: [paymentId], references: [id])
   user                  User              @relation(fields: [userId], references: [id])
+  branchRef             Branch?           @relation(fields: [branchId], references: [id])
   items                 RequisitionItem[]
 
   @@index([userId])
   @@index([status])
+  @@index([branchId])
 }
 
 model RequisitionItem {
@@ -323,29 +329,91 @@ model Expense {
 }
 
 model Approval {
-  id              String         @id @default(cuid())
-  expenseId       String?
-  requisitionId   String?
-  monthlyBudgetId String?
-  invoiceId       String?
-  approverId      String
-  level           Int            @default(1)
-  status          String         @default("PENDING")
-  comments        String?
-  approvedAt      DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  approver        User           @relation(fields: [approverId], references: [id])
-  expense         Expense?       @relation(fields: [expenseId], references: [id])
-  invoice         Invoice?       @relation(fields: [invoiceId], references: [id])
-  monthlyBudget   MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
-  requisition     Requisition?   @relation(fields: [requisitionId], references: [id])
+  id                String         @id @default(cuid())
+  expenseId         String?
+  requisitionId     String?
+  monthlyBudgetId   String?
+  invoiceId         String?
+  approverId        String
+  level             Int            @default(1)
+  status            String         @default("PENDING")
+  comments          String?
+  approvedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  recommendedAmount Float?         // RM's suggested adjusted amount
+  rmComments        String?        // RM's note when recommending adjustment
+  approver          User           @relation(fields: [approverId], references: [id])
+  expense           Expense?       @relation(fields: [expenseId], references: [id])
+  invoice           Invoice?       @relation(fields: [invoiceId], references: [id])
+  monthlyBudget     MonthlyBudget? @relation(fields: [monthlyBudgetId], references: [id])
+  requisition       Requisition?   @relation(fields: [requisitionId], references: [id])
 
   @@index([expenseId])
   @@index([requisitionId])
   @@index([monthlyBudgetId])
   @@index([invoiceId])
   @@index([approverId])
+}
+
+// ─── Branch Management ───────────────────────────────────────────────
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  branches  Branch[]
+
+  @@index([code])
+}
+
+model Branch {
+  id           String         @id @default(cuid())
+  name         String
+  code         String         @unique
+  address      String?
+  regionId     String
+  teamLeaderId String?        @unique
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  region       Region         @relation(fields: [regionId], references: [id])
+  teamLeader   User?          @relation(fields: [teamLeaderId], references: [id])
+  wallet       BranchWallet?
+  requisitions Requisition[]
+
+  @@index([regionId])
+  @@index([teamLeaderId])
+}
+
+model BranchWallet {
+  id           String                    @id @default(cuid())
+  branchId     String                    @unique
+  balance      Float                     @default(0)
+  currency     String                    @default("USD")
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  branch       Branch                    @relation(fields: [branchId], references: [id])
+  transactions BranchWalletTransaction[]
+}
+
+model BranchWalletTransaction {
+  id             String       @id @default(cuid())
+  branchWalletId String
+  type           String       // CREDIT | DEBIT
+  amount         Float
+  currency       String       @default("USD")
+  description    String
+  reference      String?
+  requisitionId  String?
+  createdAt      DateTime     @default(now())
+  branchWallet   BranchWallet @relation(fields: [branchWalletId], references: [id])
+
+  @@index([branchWalletId])
+  @@index([requisitionId])
 }
 
 model Invoice {

@@ -37,7 +37,8 @@ import {
     PiUploadSimple,
     PiPackage,
     PiPercent,
-    PiArrowsLeftRight
+    PiArrowsLeftRight,
+    PiGlobe
 } from "react-icons/pi";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
@@ -74,6 +75,7 @@ const menuCategories: MenuCategory[] = [
             { name: "Requisitions", href: "/dashboard/requisitions", icon: PiReceipt },
             { name: "Salaries & Payroll", href: "/dashboard/salaries", icon: PiUsersThree },
             { name: "Approvals", href: "/dashboard/approvals", icon: PiCheckCircle },
+            { name: "Branch Approvals", href: "/dashboard/branch-approvals", icon: PiCheckCircle },
             { name: "Payments", href: "/dashboard/payments", icon: PiCurrencyDollar },
         ]
     },
@@ -121,6 +123,8 @@ const menuCategories: MenuCategory[] = [
             { name: "Account Requests", href: "/dashboard/users", icon: PiUsersThree },
             { name: "Roles & Permissions", href: "/dashboard/roles", icon: PiShieldCheck },
             { name: "Policies", href: "/dashboard/policies", icon: PiShieldCheck },
+            { name: "Regions", href: "/dashboard/regions", icon: PiGlobe },
+            { name: "Branches", href: "/dashboard/branches", icon: PiBuildings },
             { name: "Data Import", href: "/dashboard/settings/import", icon: PiUploadSimple },
             { name: "System config", href: "/dashboard/settings", icon: PiGear },
         ]
@@ -193,6 +197,9 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
             "/dashboard/settings": ["SETTINGS.MANAGE"],
             "/dashboard/settings/import": ["SETTINGS.MANAGE", "IMPORT.MANAGE"],
             "/dashboard/policies": ["POLICIES.MANAGE", "POLICIES.VIEW"],
+            "/dashboard/regions": ["REGIONS.VIEW", "BRANCHES.VIEW"],
+            "/dashboard/branches": ["BRANCHES.VIEW", "BRANCHES.MANAGE"],
+            "/dashboard/branch-approvals": ["REQUISITIONS.VIEW_BRANCH", "REQUISITIONS.APPROVE"],
 
             // Financials
             "/dashboard/invoices": ["INVOICES.VIEW", "INVOICES.MANAGE", "SALES.MANAGE"],
@@ -393,7 +400,7 @@ export function Sidebar({ isOpen = false, onClose }: { isOpen?: boolean; onClose
                             {user?.name || "User"}
                         </p>
                         <p className="text-[10px] font-normal text-indigo-300/60 capitalize">
-                            {(user as any)?.role?.toLowerCase()?.replace('_', ' ') || "Employee"}
+                            {(user as any)?.role?.toLowerCase()?.replace(/_/g, ' ') || "Employee"}
                         </p>
                     </div>
                     <Button

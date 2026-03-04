@@ -11,6 +11,7 @@ import { fulfillRequisition, updateRequisition } from "./actions";
 import { useToast } from "@/components/ui/ToastProvider";
 import { DeleteEntityButton } from "@/components/dashboard/DeleteEntityButton";
 import { AddItemModal } from "@/components/requisitions/AddItemModal";
+import { EditBudgetModal } from "@/components/requisitions/EditBudgetModal";
 
 interface RequisitionListProps {
     requisitions: any[];
@@ -44,6 +45,7 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [addingItemTo, setAddingItemTo] = useState<any>(null);
+    const [editingBudget, setEditingBudget] = useState<any>(null);
 
     // Edit state
     const [editingReq, setEditingReq] = useState<any>(null);
@@ -212,6 +214,16 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                                                     onClick={() => openEdit(req)}
                                                     className="p-1.5 rounded hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition-all opacity-0 group-hover:opacity-100"
                                                     title="Edit Requisition"
+                                                >
+                                                    <PiPencil className="text-[15px]" />
+                                                </button>
+                                            )}
+
+                                            {req.listType === 'MONTHLY' && req.status === 'PENDING' && (
+                                                <button
+                                                    onClick={() => setEditingBudget(req)}
+                                                    className="p-1.5 rounded hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition-all opacity-0 group-hover:opacity-100"
+                                                    title="Edit Budget"
                                                 >
                                                     <PiPencil className="text-[15px]" />
                                                 </button>
@@ -674,6 +686,13 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                 </div>,
                 document.body
             )}
+
+            {/* Edit Budget Modal */}
+            <EditBudgetModal
+                isOpen={!!editingBudget}
+                onClose={() => setEditingBudget(null)}
+                budget={editingBudget}
+            />
         </>
     );
 }

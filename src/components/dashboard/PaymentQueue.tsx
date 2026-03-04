@@ -127,10 +127,14 @@ export function PaymentQueue({
     const router = useRouter();
 
     const getDefaultTab = () => {
-        if (authorizedPayments.length > 0 && ['FINANCE_TEAM', 'FINANCE_APPROVER', 'SYSTEM_ADMIN'].includes(userRole)) return 'disbursements';
-        if (pendingPayments.length > 0 && ['FINANCE_APPROVER', 'MANAGER'].includes(userRole)) return 'approvals';
-        if (paidPayments.length > 0 && ['FINANCE_TEAM', 'FINANCE_APPROVER', 'SYSTEM_ADMIN'].includes(userRole)) return 'closing';
-        if ((expenses.length > 0 || invoices.length > 0 || requisitions.length > 0 || budgets.length > 0)) return 'payables';
+        const isFinance = ['FINANCE_TEAM', 'FINANCE_APPROVER', 'SYSTEM_ADMIN'].includes(userRole);
+        const canApprove = ['FINANCE_APPROVER', 'MANAGER', 'SYSTEM_ADMIN'].includes(userRole);
+
+        // Follow the natural workflow order so users always land on the most urgent/earliest stage
+        if (pendingPayments.length > 0 && canApprove) return 'approvals';
+        if (authorizedPayments.length > 0 && isFinance) return 'disbursements';
+        if (expenses.length > 0 || invoices.length > 0 || requisitions.length > 0 || budgets.length > 0) return 'payables';
+        if (paidPayments.length > 0 && isFinance) return 'closing';
         return 'history';
     }
 
