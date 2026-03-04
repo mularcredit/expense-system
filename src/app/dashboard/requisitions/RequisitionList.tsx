@@ -250,7 +250,7 @@ export function RequisitionList({ requisitions, monthlyBudgets = [] }: Requisiti
                                                 </button>
                                             ) : null}
 
-                                            {req.listType === 'STANDARD' && (req.status === 'APPROVED' || req.status === 'PAID' || req.status === 'FULFILLED') ? (
+                                            {req.listType === 'STANDARD' && (req.status === 'APPROVED' || req.status === 'PAID' || req.status === 'FULFILLED' || req.status === 'COMPLETED' || req.status === 'CLOSED') ? (
                                                 <Link
                                                     href={`/receipt-studio?requisitionId=${req.id}`}
                                                     className="text-xs font-medium text-gray-700 bg-white border border-gray-200 px-2.5 py-1.5 rounded-md hover:bg-gray-50 transition-all flex items-center gap-1.5 whitespace-nowrap"
